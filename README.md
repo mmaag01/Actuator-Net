@@ -6,13 +6,44 @@ controller signals using a windowed MLP or a multi-layer GRU.
 
 ---
 
-## Dependencies
+## Setup
+
+**Prerequisites:** [Miniforge](https://github.com/conda-forge/miniforge) installed and on your PATH.
+
+From the **Miniforge Prompt**, navigate to the project root and run:
 
 ```bash
-pip install torch numpy pandas scikit-learn matplotlib joblib
+python setup_env.py
 ```
 
-Tested with Python 3.10+, PyTorch 2.x.
+The script auto-detects your hardware (NVIDIA GPU or CPU-only), creates the
+`actuator-net` conda environment from the matching `.yml` file, and registers
+it as a Jupyter kernel. Run it once; re-run it to update the environment after
+dependency changes.
+
+### Activate the environment
+
+```bash
+conda activate actuator-net
+```
+
+Deactivate with `conda deactivate`.
+
+### Dependencies (managed by `setup_env.py`)
+
+| Package | Used in |
+|---------|---------|
+| `pytorch 2.7.1` | `dataset.py`, `models/`, `train.py`, `evaluate.py` |
+| `numpy` | everywhere |
+| `pandas` | `data_utils.py` |
+| `scikit-learn` | `dataset.py` (StandardScaler) |
+| `matplotlib` | `evaluate.py` |
+| `joblib` | `dataset.py`, `evaluate.py` |
+| `xgboost` | `main.py`, `test.py` |
+| `ipykernel` | Jupyter kernel registration |
+
+GPU machine (`environment-gpu.yml`): PyTorch built against CUDA 12.8 for the RTX 5070 Ti (Blackwell).  
+Laptop (`environment.yml`): CPU-only PyTorch.
 
 ---
 

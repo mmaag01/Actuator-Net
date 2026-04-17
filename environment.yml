@@ -1,40 +1,33 @@
 # Actuator Net — CPU environment (laptop / integrated graphics)
+# Compatible with Miniforge.
 #
-# Create:   conda env create -f environment.yml
-# Activate: conda activate actuator-net
-# Register Jupyter kernel:
+# Setup (from Miniforge Prompt):
+#   python setup_env.py
+# Or manually:
+#   conda env create -f environment.yml
+#   conda activate actuator-net
 #   python -m ipykernel install --user --name actuator-net --display-name "Actuator Net (CPU)"
 
 name: actuator-net
 
 channels:
-  - pytorch          # official PyTorch channel (CPU wheels)
-  - conda-forge      # scientific Python stack
-  - defaults
+  - pytorch          # official PyTorch CPU wheels
+  - conda-forge      # everything else (default Miniforge channel)
 
 dependencies:
   - python=3.11
 
   # ── PyTorch (CPU-only) ───────────────────────────────────────────────────
-  - pytorch=2.7.1
-  - torchvision=0.22.1
-  - torchaudio=2.7.1
-  - cpuonly
+  - pytorch::pytorch=2.7.1
+  - pytorch::cpuonly
 
-  # ── Data science ─────────────────────────────────────────────────────────
+  # ── Data & ML ────────────────────────────────────────────────────────────
   - numpy>=1.26
   - pandas>=2.2
   - scikit-learn>=1.4
   - matplotlib>=3.8
   - joblib>=1.3
-
-  # ── XGBoost (CPU) ────────────────────────────────────────────────────────
-  - py-xgboost>=2.0
+  - xgboost>=2.0
 
   # ── Jupyter kernel ───────────────────────────────────────────────────────
   - ipykernel>=6.29
-  - jupyter>=1.0
-  - ipywidgets>=8.0
-
-  # ── Dev utilities ────────────────────────────────────────────────────────
-  - pip
