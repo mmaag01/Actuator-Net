@@ -1,6 +1,6 @@
 import numpy as np
-import torch
-from torch.utils.data import Dataset, DataLoader as TorchDataLoader
+import torch # type: ignore
+from torch.utils.data import Dataset, DataLoader as TorchDataLoader # type: ignore
 from sklearn.preprocessing import StandardScaler
 import joblib
 
@@ -158,9 +158,7 @@ def get_dataloaders(batch_size: int = None,
         scaler_y=scaler_y,
     )
 
-    train_loader = TorchDataLoader(
-        train_ds, batch_size=batch_size, shuffle=True, drop_last=True
-    )
+    train_loader = TorchDataLoader(train_ds, batch_size=batch_size, shuffle=True, drop_last=True)
     val_loader  = TorchDataLoader(val_ds,  batch_size=batch_size, shuffle=False)
     test_loader = TorchDataLoader(test_ds, batch_size=batch_size, shuffle=False)
 

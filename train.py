@@ -8,10 +8,11 @@ Usage
 
 import argparse
 import csv
+import time
 
 import numpy as np
-import torch
-import torch.nn as nn
+import torch # type: ignore
+import torch.nn as nn # type: ignore
 
 import config
 from dataset import get_dataloaders
@@ -115,6 +116,7 @@ def save_checkpoint(model, optimizer, epoch, val_loss, model_type, n_features):
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 def main():
+    t_start = time.perf_counter()
     args = parse_args()
 
     torch.manual_seed(config.SEED)
@@ -124,13 +126,17 @@ def main():
     print(f"Device : {device}")
 
     print("Loading and preprocessing data …")
-    train_loader, val_loader, _, _, _ = get_dataloaders(
+    train_loader, val_loader, test_loader, scaler_X, scaler_y = get_dataloaders(
         batch_size=args.batch_size, save_scalers=True
     )
+    print(f"Elapsed Time: {(time.perf_counter()-t_start):.3f} s")
+    print(f"\nTrain Samples: {len(train_loader)}")
+    print(f"\nTest Samples: {len(test_loader)}")
+    print(f"\nValidation Samples: {len(val_loader)}")
 
     n_features = config.N_FEATURES
     model = build_model(args.model, n_features).to(device)
-    print(f"Model  : {args.model.upper()} | Parameters: {count_parameters(model):,}")
+    print(f"\nModel  : {args.model.upper()} | Parameters: {count_parameters(model):,}")
 
     criterion = nn.MSELoss()
     optimizer = torch.optim.Adam(
@@ -152,6 +158,7 @@ def main():
           f"(early-stop patience = {config.PATIENCE})\n")
 
     for epoch in range(1, args.epochs + 1):
+        t_epoch_start = time.perf_counter()
         train_loss = train_epoch(
             model, train_loader, optimizer, criterion, scheduler, device
         )
@@ -160,10 +167,10 @@ def main():
 
         improved = val_loss < best_val_loss
         marker   = " [saved]" if improved else f" (patience {patience_counter + 1}/{config.PATIENCE})"
-        print(f"Epoch {epoch:4d} | train MSE {train_loss:.6f} | val MSE {val_loss:.6f}{marker}")
+        print(f"Epoch {epoch:4d} | train MSE {train_loss:.6f} | val MSE {val_loss:.6f}{marker} | duration {(time.perf_counter()-t_epoch_start):.3f} s")
 
         if improved:
-            best_val_loss    = val_loss
+            best_val_loss = val_loss
             patience_counter = 0
             save_checkpoint(model, optimizer, epoch, val_loss, args.model, n_features)
         else:
