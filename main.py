@@ -1,12 +1,15 @@
 import pandas as pd
 import numpy as np
 from pathlib import Path
-import torch
+import torch # type: ignore
 import matplotlib.pyplot as plt
-from torch import nn
+from torch import nn # type: ignore
 import xgboost as xgb
 from data_utils import ProcessRawData, ImportData
 #from import_data import ImportData
+#git add .
+#git commit -m "short, specific message"
+#git push
 
 units = {'t':'s', 'tor':'Nm', 'vel':'rad/s', 
          'pos':'rad', 'accel':'rad/s^2', 'i':'A'}

@@ -1,0 +1,47 @@
+# Actuator Net — GPU environment (PC / NVIDIA RTX 5070 Ti, CUDA 12.8)
+#
+# The RTX 5070 Ti (Blackwell GB205) requires CUDA 12.8+.
+# pytorch-cuda=12.8 from the nvidia channel installs the matching toolkit.
+#
+# Create:   conda env create -f environment-gpu.yml
+# Activate: conda activate actuator-net
+# Register Jupyter kernel:
+#   python -m ipykernel install --user --name actuator-net --display-name "Actuator Net (GPU)"
+#
+# Verify GPU after activation:
+#   python -c "import torch; print(torch.cuda.get_device_name(0))"
+
+name: actuator-net
+
+channels:
+  - pytorch          # official PyTorch GPU wheels
+  - nvidia           # CUDA toolkit (required for pytorch-cuda)
+  - conda-forge      # scientific Python stack
+  - defaults
+
+dependencies:
+  - python=3.11
+
+  # ── PyTorch + CUDA 12.8 (Blackwell / RTX 50xx) ──────────────────────────
+  - pytorch=2.7.1
+  - torchvision=0.22.1
+  - torchaudio=2.7.1
+  - pytorch-cuda=12.8
+
+  # ── Data science ─────────────────────────────────────────────────────────
+  - numpy>=1.26
+  - pandas>=2.2
+  - scikit-learn>=1.4
+  - matplotlib>=3.8
+  - joblib>=1.3
+
+  # ── XGBoost (GPU via CUDA) ────────────────────────────────────────────────
+  - py-xgboost-gpu>=2.0    # builds with CUDA support; use device="cuda" in XGBRegressor
+
+  # ── Jupyter kernel ───────────────────────────────────────────────────────
+  - ipykernel>=6.29
+  - jupyter>=1.0
+  - ipywidgets>=8.0
+
+  # ── Dev utilities ────────────────────────────────────────────────────────
+  - pip

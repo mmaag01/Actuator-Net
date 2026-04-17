@@ -1,0 +1,170 @@
+I am building a neural network-based machine learning model to predict the measured 
+joint torque `torAct` of a HEJ-90 High Efficiency Joint actuator (maxon motor) 
+controlled via an EPOS4 controller running the JPVTC firmware mode. The project 
+is a Bachelor's thesis at Maxon Motors AG, ETH Zurich (D-MAVT).
+
+---
+
+## Project Context
+
+The actuator is controlled via the JPVTC (Joint Position Velocity Torque with 
+Compensation) controller. The controller runs internally at 2.5 kHz; current 
+control runs at 25 kHz. All data was measured and logged at 1000 Hz.
+
+Kp and Ki gains are zero — the system is driven purely by torque or velocity 
+commands. Kd is nonzero and is included in the dataset as a feature.
+
+The data is time-series and exhibits the following nonlinear phenomena that 
+a physics-based model fails to capture: friction, cogging torque, backlash, 
+temperature-dependent behavior, and high-frequency torque ripple due to the 
+gearing mechanism.
+
+---
+
+## Dataset
+
+Each sample has the following columns (all measured at 1000 Hz):
+
+Input features:
+- `torDem`    — Demanded Joint Torque [Nm]
+- `posDem`    — Demanded Joint Position [rad]
+- `velDem`    — Demanded Joint Velocity [rad/s]
+- `posAct`    — Measured Joint Position [rad]
+- `velFus`    — Sensor Fusion Filtered Fused Velocity [rpm → convert to rad/s]
+- `accFus`    — Sensor Fusion Filtered Fused Acceleration [rpm/s → convert to rad/s²]
+- `iAvg`      — Average Current [A]
+- `torEst`    — Filtered Estimated Joint Torque (model-based, from EPOS4) [Nm]
+- `Kd`        — Derivative Gain (nonzero; Kp and Ki are zero)
+
+Target:
+- `torAct`    — Measured Joint Torque [Nm]
+
+I already have two helper classes in `data_utils.py`:
+- A `DataLoader` class that loads and parses CSV experiment files into 
+  pandas DataFrames.
+- A `DataPreprocessor` class that handles unit conversions, normalization 
+  (StandardScaler per feature), and basic outlier filtering.
+
+Do NOT rewrite these classes. Import and use them.
+
+---
+
+## Task
+
+Build the full ML pipeline from scratch. Structure it as a clean, modular 
+Python project. Use PyTorch throughout.
+
+---
+
+## Architecture Requirements
+
+Implement TWO model architectures and make them easy to swap:
+
+### Model A — MLP (Baseline)
+- A windowed MLP that takes a flattened history window of length W as input
+- 3 hidden layers, 32 units each, softsign activation
+- Reference: Hwangbo et al., "Learning Agile and Dynamic Motor Skills for 
+  Legged Robots" (ETH Zurich / Intel)
+
+### Model B — GRU (Primary)
+- A multi-layer GRU followed by a fully connected output layer
+- History size L = 30 timesteps
+- K = 4 GRU layers
+- Process the sequence and use the last hidden state for prediction
+- Reference: Zhu et al., "Cycloidal Quasi-Direct Drive Actuator Designs with 
+  Learning-based Torque Estimation"
+
+Both models must accept a 3D input tensor of shape 
+(batch_size, sequence_length, n_features).
+
+---
+
+## Training Requirements
+
+- Loss: MSE
+- Optimizer: Adam, initial lr = 1e-4
+- LR Scheduler: OneCycleLR
+- Batch size: 64
+- Early stopping on validation loss (patience = 20 epochs)
+- Gradient clipping (max_norm = 1.0)
+- Save best model checkpoint to `checkpoints/best_model.pt`
+- Log training/validation loss per epoch
+
+---
+
+## Data Splitting
+
+This is time-series data. Do NOT use random shuffling for train/val/test splits. 
+Use blocked (chronological) splitting:
+- Train: first 70% of each experiment file
+- Validation: next 15%
+- Test: final 15%
+
+Use a sliding window approach to create sequences of length L=30 from the 
+training data. Ensure no overlap between the end of one split and the beginning 
+of the next (drop the first L-1 samples from each new split to avoid leakage).
+
+Reference on time series CV: Bergmeir & Benitez, "On the use of cross-validation 
+for time series predictor evaluation" (Information Sciences, 2012).
+
+---
+
+## Derived Features to Engineer
+
+Before passing data into the model, compute and append:
+- `posErr = posDem - posAct`   (position tracking error)
+- `velErr = velDem - velFus`   (velocity tracking error, after unit conversion)
+
+These are the most physically informative inputs for the PD controller residual.
+
+---
+
+## Evaluation
+
+After training, evaluate on the held-out test set and report:
+- RMSE [Nm]
+- MAE [Nm]
+- Max absolute error [Nm]
+- A time-series overlay plot: predicted vs. actual torAct for a 5-second window
+- An error distribution histogram
+
+Save all plots to `results/`.
+
+---
+
+## File Structure
+
+Produce the following layout. All files go in the project root unless noted:
+
+- data_utils.py        (already exists, do not modify)
+- dataset.py           (PyTorch Dataset and sliding window logic)
+- models/__init__.py
+- models/mlp.py        (Model A)
+- models/gru.py        (Model B)
+- train.py             (training loop, logging, checkpointing)
+- evaluate.py          (load best model, run test set, plot results)
+- config.py            (all hyperparameters and paths in one place)
+- README.md            (brief instructions to reproduce)---
+
+## Additional Constraints
+
+- All hyperparameters (L, K, hidden_size, lr, batch_size, etc.) must live in 
+  `config.py` — no magic numbers scattered in code.
+- `train.py` must accept a `--model` CLI argument: `mlp` or `gru`.
+- Use `torch.manual_seed(42)` and `numpy.random.seed(42)` for reproducibility.
+- Print the parameter count of each model before training starts.
+- Device-agnostic: auto-detect CUDA, MPS, or CPU.
+
+---
+
+## Start by:
+1. Reading data_utils.py to understand the DataLoader and DataPreprocessor APIs.
+2. Writing config.py.
+3. Writing dataset.py with the sliding window Dataset class.
+4. Writing both model files.
+5. Writing train.py.
+6. Writing evaluate.py.
+7. Writing README.md.
+
+Ask me if you need to see example data, the actuator input commands, or the data_utils.py source before 
+starting.

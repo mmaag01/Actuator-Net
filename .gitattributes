@@ -1,0 +1,18 @@
+# Normalise all text files to LF in the repo; leave working-copy endings
+# to Git's autocrlf setting (CRLF on Windows is fine for local editing).
+* text=auto
+
+# Force LF for files that must be cross-platform consistent
+*.py   text eol=lf
+*.md   text eol=lf
+*.txt  text eol=lf
+*.csv  text eol=lf
+*.yml  text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
+
+# Treat model artifacts and images as binary (no line-ending conversion)
+*.pt   binary
+*.pkl  binary
+*.png  binary
+*.jpg  binary
