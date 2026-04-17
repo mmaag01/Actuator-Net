@@ -1,0 +1,19 @@
+#Action:                    Create a conda environment for Actuator-Net with GPU support
+#Activate environment	      conda activate actuator-net
+#Deactivate environment	    conda deactivate
+#Check Python version	      python --version
+#List installed packages	  pip list
+#Update a package	          pip install --upgrade package_name
+
+name: actuator-net
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11.8
+  - pip
+  - pip:
+      - geomloss>=0.2.6
+  
+  # CUDA and cuDNN for GPU support
+  - conda-forge::cuda=12.8
+  - conda-forge::cudnn

@@ -1,0 +1,8 @@
+name: actuator-net-cpu
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11.8
+  - pip
+  - pip:
+      - geomloss>=0.2.6
