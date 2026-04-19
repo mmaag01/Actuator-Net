@@ -1,0 +1,46 @@
+# Context
+
+Previous diagnostics identified that both MLP and GRU models fail catastrophically on "hold" regime samples (771 test samples, RMSE ~65 Nm, contributing ~46% of total squared error despite being 2% of samples). The canonical failure is at t≈4.8s where predicted torque drops to ~0 while actual torque holds at +105 Nm.
+
+Before retraining anything, I need to see what the model actually sees at the moment of failure. Specifically: does `torDes` tell the model what the answer is, or is the input genuinely ambiguous?
+
+# Task
+
+Create `diagnostics/test5_failure_window_inspection.py` that:
+
+1. Loads the trained MLP and GRU checkpoints and the test split (reuse existing dataset/scaler logic from `dataset.py`, do NOT re-implement).
+
+2. Identifies the top-10 worst test-set samples by absolute error, separately for MLP and GRU. For each, record: sample index, timestamp, file of origin, actual torque, predicted torque, absolute error, regime label (using the Test 2 classifier).
+
+3. For the worst sample of each model (and for the known t≈4.8s case specifically — find it by searching for the first sample where |torAct - pred| > 150 Nm in the test stream), dump the full 30×10 input window as a CSV: rows are time steps (t-29 to t), columns are the 10 features in FEATURE_COLS order. Also include a `torAct` column for the same 30 timesteps so I can see what the target looked like leading up to the failure.
+
+4. For each failure window, print a one-line diagnostic:
+   - mean/std of `torDes` over the window
+   - mean/std of `i` (current) over the window
+   - mean/std of `velAct` over the window
+   - the ratio |torAct[t] - torDes[t]| / |torAct[t]| at the failure sample (how much the controller's commanded torque disagrees with measured)
+
+5. Plot the failure window: 10 subplots (one per feature) showing the feature's trace over the 30 samples leading up to the failure, plus a final subplot showing `torAct` (dashed) and the model's prediction (solid) at the final sample. Do this for both models separately.
+
+6. Print a verdict block that classifies each failure as:
+   - "Contradicted input": torDes was informative (|torDes - torAct| < 20 Nm) but the model ignored it
+   - "Ambiguous input": torDes was near zero or inconsistent with torAct (the model had no strong signal)
+   - "Current-driven": |torDes - torAct| is large but i * kt_estimate ≈ torAct (assume kt ≈ 0.1 Nm/A as a starting point; make it a config constant)
+   - "Uninformative": none of the above — the features genuinely don't contain the answer
+
+# Requirements
+
+- Read-only: do not modify any existing files except to add to `diagnostics/`.
+- Write outputs to `diagnostics/outputs/test5_*`.
+- Append the verdict block to `diagnostics/outputs/SUMMARY.txt` using the same format as the existing tests.
+- Figure size consistent with other diagnostics (10×6 for single panels, 12×10 for grid plots).
+
+# Deliverables
+
+1. `test5_failure_window_inspection.py` and its outputs.
+2. The verdict block, pasted into the final response.
+3. A short (3-5 line) written interpretation in the final response: based on the verdict classifications across the top-10 failures for each model, is the dominant failure mode "contradicted input" or "ambiguous input"? This directly determines whether prompt 3 (retraining with hold data) will work.
+
+# Out of scope
+
+- Any retraining, any feature changes, any model changes.

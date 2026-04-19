@@ -1,0 +1,47 @@
+# Context
+
+Diagnostics showed the training data lacks sustained non-zero torque holds (>500 ms continuous), and this is the dominant failure mode of both trained models. I need a new excitation profile that specifically exercises this regime, to be run on the HEJ-90 hardware via the APOSS controller.
+
+Existing excitation code lives in `inputs.py` (class `FreqFunctions` with methods `torqueStep`, `PosMultisine`, `TorqueMultisine`, `LogPosChirp`, `LogTorChirp`, `vel_tor_profile`). Helper `_add_ramped_pulse` constructs ramped pulses. Profiles are converted to APOSS `.mh` files by `write_profile.py`. Running at 1 kHz (`CTRL_FREQS`). Hardware limits: τ_max = 140 Nm, q̇_max = 13.0 rad/s. Velocity-mode profiles use kd=18, torque-mode use kd=0 (source: `main.ipynb` cell 1, Experiment_Design.pdf).
+
+# Task
+
+Add a new method `SustainedHold(self, ...)` to the `FreqFunctions` class in `inputs.py`. The profile should:
+
+1. For each target amplitude in [35, 70, 105, 140] Nm and each sign [+, −]:
+   - Ramp from 0 to target torque over 90 ms (reuse `_add_ramped_pulse` ramp logic)
+   - Hold at target for a hold_duration (config parameter, default 2.0 s)
+   - Ramp back to 0 over 90 ms
+   - Cool/pause at 0 for 1.5 s
+   This gives 8 hold segments per pass.
+
+2. Perform 2 passes through the amplitude list (total 16 holds) with the second pass in reversed amplitude order, so consecutive holds are not monotonically increasing in magnitude. Total duration ~16 × (0.09 + 2.0 + 0.09 + 1.5) = ~59 s at default 2.0 s holds.
+
+3. During each hold, superimpose a small (~5 Nm peak) multisine perturbation with 5 components at frequencies [3, 7, 13, 23, 41] Hz (prime-ish, to avoid harmonic overlap with the fundamental). This ensures the hold region contains non-trivial microstructure — important so the model can't just memorize "flat = constant". Random phases, reseeded per hold. Make the perturbation amplitude, component count, and frequency list config parameters with sensible defaults.
+
+4. Clip the total torque command to ±τ_max with the existing safety factor.
+
+5. Validate that the generated signal's peak slew rate does not exceed `MAX_SLEW_RATE` if that constant exists in `config.py`; otherwise add a slew-rate check with a conservative default of 4000 Nm/s and raise if exceeded.
+
+6. Add the new profile to whatever registry/list in `main.ipynb` drives `.mh` file generation, so running the existing notebook produces a `SustainedHold.mh` alongside the existing profiles.
+
+7. Plot the generated profile (first 20 s) inline in a new notebook cell: the commanded torque over time, with the regime labels (ramp / hold / perturbed-hold / cool) annotated. Save the plot to `inputs/plots/sustained_hold_preview.png`.
+
+# Requirements
+
+- Signature should match the existing methods' signatures (same kwargs pattern, same return type).
+- Docstring explains the rationale (the hold-deficient training distribution finding) with a reference to test6 output.
+- Code is runnable without hardware — it only generates the profile array and the `.mh` file.
+- Do not modify existing profiles. This is purely additive.
+
+# Deliverables
+
+1. The new method, the notebook cell that generates and plots it, and the `.mh` file.
+2. The preview plot pasted into the final response (via present_files).
+3. A short note on how to run it on hardware: which cell to execute, where the .mh file ends up, what the expected total recording time is.
+
+# Out of scope
+
+- Running the profile on hardware (I'll do that).
+- Any model or training changes — that's prompt 3b.
+- Changing the existing profiles' smooth-sign-transition logic.

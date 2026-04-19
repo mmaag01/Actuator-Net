@@ -1,0 +1,56 @@
+# Context
+
+The architecture-invariance result from Test 4 (corr(pred_mlp, pred_gru) = 0.999) combined with Test 1's finding that torEst-alone is RMSE 19.8 Nm suggests the models converged on a conditional mean driven by some subset of features. To understand what they're actually using, ablate torDes and i one at a time and measure the impact on per-regime performance.
+
+This should be run AFTER prompt 3b (use the v2 models and data), so the results reflect the hold-enriched dataset.
+
+# Task
+
+Create `experiments/ablations.py` that runs three training configurations:
+
+- **Config A (baseline v2)**: all 10 features. Use existing v2 checkpoint — do not retrain.
+- **Config B (no torDes)**: FEATURE_COLS = 10 features minus torDes (9 features). Retrain MLP and GRU from scratch.
+- **Config C (no i)**: FEATURE_COLS = 10 features minus i (9 features). Retrain MLP and GRU from scratch.
+- **Config D (no torDes AND no i)**: 8 features. Retrain both. This is the "pure proprioception" config closest to Hwangbo's original input set (pos-error + vel history).
+
+Same hyperparameters as prompt 3b. Same seeds. Save checkpoints to `checkpoints/ablations/{config}_{model}.pt`.
+
+For each config, run the regime-residual analysis (Test 2). Produce a comparison table:
+
+| Config | Features dropped | MLP overall RMSE | MLP hold RMSE | MLP osc RMSE | GRU overall RMSE | GRU hold RMSE | GRU osc RMSE |
+|---|---|---|---|---|---|---|---|
+| A (baseline v2) | none | ... | ... | ... | ... | ... | ... |
+| B | torDes | ... | ... | ... | ... | ... | ... |
+| C | i | ... | ... | ... | ... | ... | ... |
+| D | torDes, i | ... | ... | ... | ... | ... | ... |
+
+Save as `experiments/outputs/ablations_summary.md`.
+
+# Interpretation block
+
+After the table, include a written interpretation (Claude Code should fill this in based on the numbers):
+
+- "torDes is load-bearing" if Config B degrades hold RMSE by >30% vs A
+- "i is load-bearing" if Config C degrades osc or transition RMSE by >30% vs A
+- "Both features important" if both effects hold
+- "Proprioception alone sufficient" if Config D matches Config A within 10% on all regimes (this would be a surprising result worth a paragraph in the thesis)
+
+For each Config, also compute Spearman rank correlation between that model's predictions and Config A's predictions on the test set. This tells you whether dropping a feature shifted the model to a substantively different function or whether it just added noise.
+
+# Requirements
+
+- Reuse all existing infrastructure. The only thing that changes between configs is the feature list.
+- Log per-epoch val loss for each config to enable training-curve comparison later.
+- Total training time budget: 4 configs × 2 models × ~1 hour baseline ≈ 8 hours. If this is a problem on the available hardware, implement it as a single script that resumes from the last completed config so I can restart cleanly.
+
+# Deliverables
+
+1. `ablations_summary.md` with the table and interpretation.
+2. Training curves for all 8 new runs on one plot (faceted by model, coloured by config).
+3. A 2-sentence recommendation: if torDes is load-bearing, the thesis should emphasize that the feed-forward command is the primary signal and the NN is learning the error model. If i is load-bearing, the NN is essentially doing sensor fusion of the torque-from-current estimate. These are different thesis narratives.
+
+# Out of scope
+
+- Any new data collection.
+- Retuning hyperparameters per config — the point of the ablation is to hold everything else constant.
+- Ablating other features individually (posErr, velErr, etc.) — those could be a follow-up but are not necessary for the thesis.

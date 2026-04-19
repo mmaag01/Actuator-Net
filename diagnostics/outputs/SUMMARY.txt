@@ -1,0 +1,52 @@
+Actuator-Net diagnostics summary — generated 2026-04-19T18:27:59
+Scripts: test1_torest_leakage.py, test2_regime_residuals.py, test3_accel_quality.py, test4_model_agreement.py
+
+========================================================================
+[Test 1 — torEst leakage]
+========================================================================
+RMSE(torEst, torAct)     = 19.825 Nm
+MAE(torEst, torAct)      = 6.484 Nm
+corr(torEst, torAct)     = 0.925135
+mean(torAct - torEst)    = +1.794 Nm  (systematic offset)
+peak lag-corr            = 0.964014 @ lag -1 samples (-1.0 ms)
+Interpretation: torEst is not a sufficient standalone explainer of torAct; the NN models must be adding something (or failing for other reasons).
+Hard-coded thresholds: RMSE ≤ 15.0 Nm AND corr ≥ 0.99.
+If RMSE here is close to ~13.5 Nm and correlation > 0.99, both NN models are likely passthroughs.
+
+========================================================================
+[Test 2 — Regime residuals]
+========================================================================
+Thresholds: rolling-window=200 samples (200 ms), osc>20.0 Nm, rest<5.0 Nm, hold>|10.0| Nm.
+Sample counts: rest=15150, hold=771, transition=6027, oscillation=16470
+
+Per-regime RMSE [Nm]:
+  regime            MLP      GRU
+  rest            4.006    3.797
+  hold           64.993   65.965
+  transition     11.415   11.665
+  oscillation    12.924   12.992
+
+Oscillation-dominated? MLP: no, GRU: no (verdict = oscillation RMSE ≥ 3× worst other regime).
+Interpretation: if YES, the models are essentially solving the easy regimes (rest/hold/transition) and failing on oscillations — exactly what a torEst-passthrough would do.
+
+========================================================================
+[Test 3 — accelAct quality]
+========================================================================
+File analyzed: Nm105_0.15_1.5_0.09_exp (training slice of file #0)
+HF (>250 Hz) power fraction — velAct:   0.0000
+HF (>250 Hz) power fraction — accelAct: 0.0191
+Ratio accelAct/velAct HF fraction = 542.03  (noise-dominated if > 2.0×)
+Verdict: accelAct IS noise-dominated near Nyquist — pre-filter or drop it before touching sequence length.
+Smoothing: Savitzky-Golay (window=21, polyorder=3) visibly reduces the fast wiggle; check test3_accel_raw_vs_smoothed.png.
+accelAct is read directly from the controller register '1: PO_BUSMOD_VALUE [0x4C01/6]' (Sensor Fusion Filtered Fused Acceleration); Python only applies mrpm/s → rad/s² unit conversion.
+
+========================================================================
+[Test 4 — Model agreement]
+========================================================================
+corr(pred_mlp, pred_gru) = 0.998822
+RMSE(pred_mlp, pred_gru) = 2.463 Nm
+MAE(pred_mlp, pred_gru)  = 1.578 Nm
+corr(pred_mlp, torEst)   = 0.957455
+corr(pred_gru, torEst)   = 0.957966
+Thresholds: pair-corr ≥ 0.995, both corr(*, torEst) ≥ 0.99.
+Verdict: Models agree with each other but not especially with torEst; they learned the same thing, but it isn't just torEst.

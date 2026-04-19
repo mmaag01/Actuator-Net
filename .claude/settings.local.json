@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(conda activate *)",
+      "Bash(python -c \"import torch; print\\(torch.__version__\\); import scipy; print\\(scipy.__version__\\)\")",
+      "Bash(where conda *)",
+      "Bash(where python *)",
+      "Read(//c/Users/maxma/miniconda3/**)",
+      "Read(//c/Users/maxma/miniforge3/envs/**)",
+      "Read(//c/ProgramData/miniforge3/envs/**)"
+    ]
+  }
+}

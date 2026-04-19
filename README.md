@@ -37,8 +37,9 @@ Deactivate with `conda deactivate`.
 | `numpy` | everywhere |
 | `pandas` | `data_utils.py` |
 | `scikit-learn` | `dataset.py` (StandardScaler) |
-| `matplotlib` | `evaluate.py` |
-| `joblib` | `dataset.py`, `evaluate.py` |
+| `scipy` | `diagnostics/test3_accel_quality.py` (Welch PSD, Savitzky-Golay) |
+| `matplotlib` | `evaluate.py`, `diagnostics/` |
+| `joblib` | `dataset.py`, `evaluate.py`, `diagnostics/` |
 | `xgboost` | `main.py`, `test.py` |
 | `ipykernel` | Jupyter kernel registration |
 
@@ -59,6 +60,7 @@ Actuator Net/
 │   └── gru.py         Model B — multi-layer GRU (Zhu et al., 2023)
 ├── train.py           training loop with checkpointing and early stopping
 ├── evaluate.py        test-set evaluation and result plots
+├── diagnostics/       read-only diagnostic scripts (see diagnostics/README.md)
 ├── checkpoints/       best_model_mlp.pt, best_model_gru.pt, scaler_X.pkl, scaler_y.pkl
 └── results/           metrics CSV, time-series overlay, error histogram
 ```
@@ -123,6 +125,19 @@ Averages MLP and GRU predictions and reports all three side by side:
 - `results/timeseries_ensemble.png` — four-line overlay (measured, MLP, GRU, ensemble)
 - `results/error_hist_ensemble.png` — stacked histograms for all three
 - `results/metrics_ensemble.csv` — MLP / GRU / Ensemble columns
+
+---
+
+## Diagnostics
+
+Four read-only diagnostic scripts live under `diagnostics/`. They reuse the
+existing splitter/scaler and operate on the trained MLP + GRU checkpoints.
+See `diagnostics/README.md` for the hypothesis each test targets and the
+recommended run order.
+
+```bash
+python diagnostics/run_all.py   # runs all four; writes outputs/SUMMARY.txt
+```
 
 ---
 

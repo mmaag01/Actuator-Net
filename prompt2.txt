@@ -1,0 +1,84 @@
+# Context
+
+You are working in an existing repo that trains two PyTorch models (WindowedMLP, ActuatorGRU) to predict actuator torque (`torAct`) from a 30-sample window of 10 features at 1 kHz. Headline test results so far: MLP RMSE 13.53 Nm, GRU RMSE 13.66 Nm, MAE ~4 Nm for both, max |err| ~224 Nm. Both models fail catastrophically at the same sample (t≈4.8s, error ~−200 Nm), which suggests they have collapsed to the same function. We need to diagnose *why* before doing any more architecture work or retraining.
+
+Relevant files (read these first to understand the existing code):
+- `config.py` — contains `FEATURE_COLS`, `SEQ_LEN`, `INCLUDE_I2T`, training hyperparams
+- `dataset.py` — contains `_split_df` (chronological 70/15/15 per file) and the StandardScaler logic
+- `train.py` — training loop, OneCycleLR, early stopping
+- `evaluate.py` — produces metrics CSVs and time-series/histogram plots
+- `mlp.py`, `gru.py` — model definitions
+
+Feature set (10): `torDes, posDes, velDes, posAct, velAct, accelAct, i, torEst, posErr, velErr`. Target: `torAct`.
+
+# Task
+
+Implement four diagnostic analyses as standalone scripts in a new `diagnostics/` directory. Each script should load the existing trained MLP and GRU checkpoints, reuse the existing dataset/split/scaler logic from `dataset.py` (do not re-implement splitting), and write its outputs to `diagnostics/outputs/` as CSVs and PNGs. Do NOT retrain anything in this PR.
+
+## Test 1: Leakage check on `torEst` (`diagnostics/test1_torest_leakage.py`)
+
+On the test split, with no model involved:
+1. Compute `RMSE(torEst, torAct)`, `MAE(torEst, torAct)`, `Pearson corr(torEst, torAct)`, and the systematic offset `mean(torAct − torEst)`.
+2. Compute the lag-correlation of `torEst` vs `torAct` for lags −20 to +20 samples and report the lag of peak correlation. (Hypothesis: `torEst` is a lagged smoothed version of `torAct`.)
+3. Plot `torEst` vs `torAct` over the same time window where the t≈4.8s failure occurs. Overlay both on one axis and the residual `torAct − torEst` on a second axis below.
+4. Print a summary line: "If RMSE here is close to ~13.5 Nm and correlation > 0.99, both NN models are likely passthroughs."
+
+Output: `test1_torest_metrics.csv`, `test1_lag_correlation.csv`, `test1_torest_vs_toract.png`.
+
+## Test 2: Regime-conditional residual analysis (`diagnostics/test2_regime_residuals.py`)
+
+For each model (MLP and GRU) on the test split:
+1. Classify each sample into a regime using a rolling standard deviation of `torAct` over a 200-sample (200 ms) window:
+   - `oscillation` if rolling std > 20 Nm
+   - `hold` if rolling std < 5 Nm AND |torAct| > 10 Nm (held at non-zero torque)
+   - `rest` if rolling std < 5 Nm AND |torAct| ≤ 10 Nm
+   - `transition` otherwise
+   These thresholds are starting points — make them config constants at the top of the file so they're easy to tune.
+2. For each regime, compute count, RMSE, MAE, max |err|, and mean error.
+3. Plot a grouped bar chart: regime on x-axis, RMSE on y-axis, one bar per model.
+4. Plot the per-sample absolute error over time, color-coded by regime.
+
+Output: `test2_regime_metrics_{mlp,gru}.csv`, `test2_regime_rmse_bars.png`, `test2_error_by_regime_{mlp,gru}.png`.
+
+## Test 3: `accelAct` quality check (`diagnostics/test3_accel_quality.py`)
+
+Before recommending longer sequence windows or trusting acceleration as a signal:
+1. Inspect how `accelAct` is computed in the data pipeline (check `dataset.py` and any preprocessing code, and report what you find in the script's docstring).
+2. On a representative training file, compute and plot the power spectral density (Welch's method) of `velAct` and `accelAct` on the same axes (log-log). Mark Nyquist (500 Hz) and 1/4 Nyquist (125 Hz).
+3. Compute the ratio of high-frequency power (>250 Hz) to total power for both signals. If `accelAct`'s ratio is much higher than `velAct`'s, it's noise-dominated near Nyquist.
+4. Compute a Savitzky-Golay smoothed version of `accelAct` (window 21, polyorder 3) and overlay raw vs smoothed on a 1-second segment.
+
+Output: `test3_psd_vel_accel.png`, `test3_accel_raw_vs_smoothed.png`, `test3_hf_power_ratio.csv`.
+
+## Test 4: Cross-model agreement analysis (`diagnostics/test4_model_agreement.py`)
+
+Quantify how similar the two models' predictions are (the central evidence for collapse to the same function):
+1. Compute, on the test split: `corr(pred_mlp, pred_gru)`, `RMSE(pred_mlp, pred_gru)`, `MAE(pred_mlp, pred_gru)`.
+2. Compute `corr(pred_mlp, torEst)` and `corr(pred_gru, torEst)`. If both are very close to 1.0, the models have collapsed onto `torEst`.
+3. Scatter plot: `pred_mlp` vs `pred_gru` (one point per test sample, alpha=0.1). Overlay the y=x line.
+4. Plot `pred_mlp − pred_gru` over time. If the two models genuinely learned different things, this difference should be structured and non-trivial. If it's near-zero noise, they've converged.
+
+Output: `test4_model_agreement.csv`, `test4_pred_scatter.png`, `test4_pred_difference_timeseries.png`.
+
+# Requirements
+
+- Each script must be runnable standalone: `python diagnostics/test1_torest_leakage.py` etc. Use `argparse` for the test split path / model checkpoint paths if they're not auto-discoverable from `config.py`.
+- Do NOT modify `config.py`, `dataset.py`, `train.py`, `evaluate.py`, `mlp.py`, or `gru.py`. Diagnostics are read-only consumers of the existing pipeline.
+- Reuse the existing scaler, splitter, and window-construction logic by importing from `dataset.py`. Do not re-implement.
+- All scripts use the same matplotlib style and a consistent figure size (e.g., 10×6) for thesis-readiness.
+- Each script ends with a printed summary block (5–10 lines) interpreting its own results in plain English — what passed, what failed, what the next action is. The interpretation logic should be hard-coded thresholds (e.g., "corr > 0.99 → likely passthrough") so the script tells me the answer rather than making me eyeball plots.
+- Add a `diagnostics/README.md` that lists the four tests, the hypothesis each one tests, and the order to run them.
+- Add a `diagnostics/run_all.py` that runs all four scripts in sequence and concatenates the printed summaries into `diagnostics/outputs/SUMMARY.txt`.
+
+# Deliverables
+
+1. The four scripts above plus `run_all.py` and extension of `README.md`.
+2. The contents of `diagnostics/outputs/SUMMARY.txt` after running `run_all.py`, pasted into the final response so I can see the diagnostic verdicts without opening files.
+
+# Out of scope (do not do)
+
+- Any retraining, any change to feature sets, any change to model architectures, any change to training loops.
+- Adding new models, dropout, weight decay, smoothness loss, Huber loss, or longer sequence windows. These come *after* diagnostics, in a separate PR.
+- Adding the oscillation-hold-oscillation excitation profile or any new data collection.
+
+Start by reading `config.py`, `dataset.py`, and `evaluate.py` so you understand how the existing pipeline loads data, applies the scaler, and computes metrics. Then implement the four scripts. Ask before deviating from the spec above.

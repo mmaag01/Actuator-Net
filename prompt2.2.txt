@@ -1,0 +1,44 @@
+# Context
+
+The Test 2 regime classifier (rolling-std over 200 ms of torAct, with thresholds osc>20 Nm / rest<5 Nm / hold>|10| Nm) found that "hold" samples are only 2% of the test set but contribute 46% of squared error. The hypothesis is that holds are similarly rare in the training set — the models have never learned the hold regime because they've barely seen it.
+
+I need this number quantified before the thesis defense. The prediction is that sustained hold windows (>500 ms continuous hold) are <1% of training windows.
+
+# Task
+
+Create `diagnostics/test6_train_regime_distribution.py` that:
+
+1. Loads the training split (reuse `dataset.py` split logic) and applies the same regime classifier as `test2_regime_residuals.py`. Import the classifier function from test2 rather than copy-pasting; if it's not importable, refactor test2 minimally to expose it as `classify_regimes(tor_act_series, window=200, osc_thresh=20.0, rest_thresh=5.0, hold_abs_thresh=10.0)` and import from there.
+
+2. Produce a per-regime sample count and fraction for the training set. Print a table side-by-side with the test-set counts from Test 2.
+
+3. Compute **sustained-hold windows**: contiguous runs of "hold" classification lasting at least 500 ms (500 samples). Report:
+   - number of such runs in training data
+   - total duration of sustained holds (seconds)
+   - distribution of run lengths (min/median/max, plus a histogram plot with bins at 0.5/1/2/5/10 s)
+   - same for test data, for comparison
+
+4. Group by source file (the data loader knows which file each sample came from). Report per-file: total samples, hold-regime samples, sustained-hold runs. This will show whether holds come from one specific profile (e.g., the torque step ladder) or are distributed.
+
+5. Produce a stacked bar chart: one bar per source file, stacked by regime (rest / hold / transition / oscillation), showing sample counts. This makes it visually obvious which profiles contain which regimes.
+
+6. Print a verdict block:
+   - "Hold-deficient training set" if train hold fraction < 5% AND sustained-hold count < 20 runs
+   - "Hold-sufficient training set" otherwise
+
+# Requirements
+
+- Read-only on everything except `diagnostics/`. The refactor of test2 (if needed) should only extract a function, not change behavior.
+- Write outputs to `diagnostics/outputs/test6_*`.
+- Append the verdict block to `diagnostics/outputs/SUMMARY.txt`.
+
+# Deliverables
+
+1. `test6_train_regime_distribution.py`, the possibly-refactored `test2_regime_residuals.py`, and outputs.
+2. Verdict block pasted into the final response.
+3. The per-file stacked bar chart referenced by filename in the final response so I can open it directly.
+
+# Out of scope
+
+- Any changes to data loading, splitting, or preprocessing beyond importing/calling the classifier.
+- Collecting new data or modifying excitation profiles.

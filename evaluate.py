@@ -14,7 +14,7 @@ import sys
 import joblib
 import matplotlib.pyplot as plt
 import numpy as np
-import torch
+import torch # type: ignore
 
 import config
 from dataset import get_dataloaders
