@@ -19,11 +19,11 @@ def _load_dataframes():
     loader = ImportData(path=str(config.DATA_PATH))
     dfs = []
     if config.USE_MAIN:
-        dfs.extend(loader.importMain())
+        dfs.extend(loader.importMain(config.MAIN_TYPES))
     if config.USE_CRASHES:
-        dfs.extend(loader.importFails())
+        dfs.extend(loader.importFails(config.CRASHES_TYPES))
     if config.USE_OTHER:
-        dfs.extend(loader.importOther())
+        dfs.extend(loader.importOther(config.OTHER_TYPES))
     assert dfs, "No data loaded — check USE_MAIN/USE_CRASHES/USE_OTHER in config.py"
     return dfs
 

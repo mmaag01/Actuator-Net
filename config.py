@@ -9,6 +9,9 @@ RESULTS_DIR    = PROJECT_ROOT / "results"
 USE_MAIN    = True
 USE_CRASHES = False
 USE_OTHER   = False
+MAIN_TYPES = ['tStep', 'TMS', 'PMS', 'PLC']
+CRASHES_TYPES = ['tStep', 'TMS']
+OTHER_TYPES = ['tStep', 'tStep CmdErrs' 'TMS', 'PMS', 'Misc']
 
 # ── Features ─────────────────────────────────────────────────────────────────
 FEATURE_COLS = [
@@ -44,7 +47,7 @@ WEIGHT_DECAY     = 0.0
 # ── Data split ────────────────────────────────────────────────────────────────
 TRAIN_RATIO = 0.70
 VAL_RATIO   = 0.15
-# TEST_RATIO  = 1 - TRAIN_RATIO - VAL_RATIO  (implied)
+# TEST_RATIO  = 1 - TRAIN_RATIO - VAL_RATIO = 0.15  (implied)
 
 # ── Reproducibility ───────────────────────────────────────────────────────────
 SEED = 42

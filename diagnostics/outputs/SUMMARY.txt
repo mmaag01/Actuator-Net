@@ -50,3 +50,36 @@ corr(pred_mlp, torEst)   = 0.957455
 corr(pred_gru, torEst)   = 0.957966
 Thresholds: pair-corr ≥ 0.995, both corr(*, torEst) ≥ 0.99.
 Verdict: Models agree with each other but not especially with torEst; they learned the same thing, but it isn't just torEst.
+
+========================================================================
+[Test 5 — Failure-window inspection]
+========================================================================
+KT_ESTIMATE=0.1 Nm/A | VERDICT_THR=20.0 Nm | LARGE_ERR_THR=150.0 Nm
+First |err|>150 Nm sample — MLP: idx=38180, t_global=38.180s, err=216.4 Nm, regime=oscillation
+First |err|>150 Nm sample — GRU: idx=38180, t_global=38.180s, err=215.8 Nm, regime=oscillation
+
+MLP top-10 verdict counts:
+  Ambiguous input: 10/10
+  Dominant failure mode: Ambiguous input
+
+GRU top-10 verdict counts:
+  Ambiguous input: 10/10
+  Dominant failure mode: Ambiguous input
+
+
+========================================================================
+[Test 6 — Training-set regime distribution]
+========================================================================
+Training rows: 185,332   Test rows: 38,414
+Regime split (train | test):
+  rest           train= 85,703 (46.24%)  test=15,146 (39.43%)
+  hold           train=  2,650 (1.43%)  test=   771 (2.01%)
+  transition     train= 39,413 (21.27%)  test= 6,027 (15.69%)
+  oscillation    train= 57,566 (31.06%)  test=16,470 (42.87%)
+
+Sustained-hold runs (>=500 ms):
+  Train: 0 runs, 0.0s total  [min=nans  med=nans  max=nans]
+  Test:  0 runs, 0.0s total  [min=nans  med=nans  max=nans]
+
+Thresholds: hold_frac<5% AND sustained_runs<20
+Verdict: Hold-deficient training set

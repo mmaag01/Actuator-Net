@@ -14,19 +14,19 @@ from data_utils import ProcessRawData, ImportData
 units = {'t':'s', 'tor':'Nm', 'vel':'rad/s', 
          'pos':'rad', 'accel':'rad/s^2', 'i':'A'}
 
-def convertData(main_data=True, fails_data=False, other_data=False):
-    DataProcessor = ProcessRawData(main_experiments=main_data, crashed_experiments=fails_data, other_experiments=other_data)
+def convertData():
+    DataProcessor = ProcessRawData()
     DataProcessor.process_all(suffix="_exp")
 
 if __name__ == "__main__":
-    #processData(main_data=True, fails_data=True, other_data=False)
+    convertData()
+    df = pd.read_csv("C:\\Users\\maxma\\OneDrive\\ETH\\Bachelors_Thesis\\Data Collection\\Actuator Net\\Data\\Main\\tStep\\Nm105_0.15_1.5_0.09_exp.csv")
+    print(len(df.columns))
+    print(df.columns)
     importer = ImportData(units=units, zero_offset=True)
     main_data = importer.importMain()
     fails_data = importer.importFails()
     other_data = importer.importOther()
     combined_data = importer.combineDatasets()
-    combined_data = importer.convertUnits()
     file_names = combined_data['file_name']
     combined_data = combined_data.drop(columns=['file_name'])
-
-   
