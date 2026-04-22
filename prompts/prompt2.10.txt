@@ -1,0 +1,64 @@
+# Context
+
+Hold-regime bias contributes ~46% of test squared error but training data lacks sustained holds, so we cannot fix it with more data. The remaining lever is to change what the network is asked to learn. `torEst` (EPOS4 internal torque estimate, iq-derived) has RMSE 19.8 Nm against `torAct` (Test 1) — it's a bad standalone predictor but a reasonable baseline. If we make the network learn the RESIDUAL `torAct - torEst` instead of `torAct` directly, the target variance drops substantially, and the network's capacity can be spent on the part of the signal that `torEst` doesn't explain.
+
+This is essentially a skip connection from `torEst` to the output: `pred = torEst + f_theta(features)` where f_theta is the NN. At inference, predicted torque = NN output + current torEst value. Inspired by residual networks and by the hybrid-model narrative in Lee et al. (HWANG_really_accurate.pdf) where a physics baseline carries the dominant signal and a learned term corrects it.
+
+# Task
+
+Create `experiments/residual_learning.py` and supporting config changes.
+
+1. Add a config flag `RESIDUAL_TARGET = True` (default False so v1 behavior is preserved).
+
+2. When `RESIDUAL_TARGET = True`:
+   - Training target becomes `torAct[t] - torEst[t]` (NOT windowed — the target is the residual at the final timestep).
+   - Fit the target scaler on residuals, not on torAct.
+   - During training, loss is MSE on the normalized residual.
+   - During evaluation, `pred_torque = scaler_y.inverse_transform(model_output) + torEst[t]`. Report metrics (RMSE, MAE, regime breakdown, error at idx=38180) on the RECONSTRUCTED torque, not the residual — this must be apples-to-apples with the v1 results.
+
+3. Retrain MLP and GRU with RESIDUAL_TARGET=True. Same hyperparameters as v1. Same seeds. Checkpoints saved to `checkpoints/residual/`.
+
+4. KEY DIAGNOSTIC: run Test 4 (model agreement) on the residual-trained models. If corr(pred_mlp, pred_gru) drops substantially below 0.999 (v1 value), it means the residual framing breaks the architecture-convergence — the two models are now free to explore the residual space independently. If it stays at 0.999, nothing changed except offset.
+
+5. Produce `experiments/outputs/residual_comparison.md`:
+
+   | Metric | v1 MLP | residual MLP | v1 GRU | residual GRU |
+   |---|---|---|---|---|
+   | Overall RMSE | 13.53 | ... | 13.66 | ... |
+   | Overall MAE | 4.13 | ... | 4.04 | ... |
+   | Max |err| | 223.5 | ... | 225.4 | ... |
+   | Hold RMSE | 64.99 | ... | 65.97 | ... |
+   | Osc RMSE | 12.92 | ... | 12.99 | ... |
+   | Transition RMSE | 11.42 | ... | 11.67 | ... |
+   | Rest RMSE | 4.01 | ... | 3.80 | ... |
+   | Err at idx=38180 | 216.4 | ... | 215.8 | ... |
+   | corr(pred_mlp, pred_gru) | 0.999 | ... | - | - |
+   | Best val loss epoch | 48 | ... | 29 | ... |
+   | val/train RMSE ratio | 1.19 | ... | 1.43 | ... |
+
+# Interpretation block
+
+- "Residual framing helps broadly" if overall RMSE drops >10% on both models AND hold RMSE drops >20% — strongest possible outcome
+- "Residual framing fixes holds only" if hold RMSE drops >30% but overall RMSE moves <5%
+- "Residual framing fixes ringing only" if idx=38180 error drops >50% but aggregate metrics barely move  
+- "Residual framing neutral" if everything moves <5% — would indicate the NN was already effectively learning the residual implicitly (consistent with architecture convergence being a fundamental limit, not a choice)
+- "Residual framing hurt" if metrics degrade — means the normalization statistics for the residual space are poorly matched to torEst's error distribution
+
+# Requirements
+
+- Do NOT overwrite any v1 artifacts.
+- Record the target residual statistics (mean, std, skew, kurtosis) on the training set so we know what the network was actually optimizing. Print these at the start of training.
+- Inference reconstruction must be tested with an assertion: run the v1 test set through the residual pipeline using torEst as the skip signal and confirm output shape and magnitude are reasonable before declaring metrics.
+
+# Deliverables
+
+1. The comparison report, filled in.
+2. A time-series plot over the failure region (samples 38150-38250) showing: torAct (truth), torEst (baseline), v1 GRU prediction, residual GRU prediction, all overlaid. This single plot will be either very revealing or a conclusive null result.
+3. A plot of the residual target distribution from training data (histogram + KDE) with summary stats.
+
+# Out of scope
+
+- Combining residual learning with accelAct smoothing, ablations, or longer SEQ_LEN. Those combinations come after this single-variable experiment shows whether residual framing helps.
+- Any other skip-connection design (e.g. skip from `i` or `torDes`). torEst is the highest-signal candidate; start there.
+
+

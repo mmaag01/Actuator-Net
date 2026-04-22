@@ -1,0 +1,54 @@
+# Context
+
+Sanity-check baseline that should have been in the original diagnostics: how much of the predictive task is solvable by a plain linear model? If linear regression is close to the NNs on most regimes, the NN's contribution is shape-fitting a mildly nonlinear residual, which is a much more modest claim than "learning actuator dynamics" and affects how the thesis is framed.
+
+This can be run at any time — does not depend on prompts 3-5. Run it on the baseline data for comparability with the existing diagnostics.
+# Task
+
+Create `baselines/linear_regression.py` that:
+
+1. Loads the v1 training and test splits (reuse dataset.py). Note: linear regression does not need windowing. Use only the current-sample features (SEQ_LEN=1 effectively). This is a deliberate methodological choice — a fair NN comparison is harder and not what we want here; we want the simplest reasonable baseline.
+
+2. Fit four variants:
+   - **LR-full**: all 10 features
+   - **LR-minimal**: 4 features {torDes, i, velAct, posErr}
+   - **LR-physics**: 2 features {torDes, i} — this is the "I only trust the motor command and the current" baseline
+   - **LR-windowed**: flatten a SEQ_LEN=30 window of all 10 features into 300 inputs, ridge regression with alpha chosen by 5-fold CV. This is the direct linear analogue of the WindowedMLP and the cleanest NN-vs-linear comparison.
+
+3. Evaluate each on the test set. Compute overall RMSE/MAE/max-error and regime-conditional RMSE (reuse Test 2's classifier).
+
+4. Add the results to a comparison table:
+
+   | Model | Features | Overall RMSE | Hold RMSE | Osc RMSE | Transition RMSE | Rest RMSE |
+   |---|---|---|---|---|---|---|
+   | LR-physics | torDes, i | ... | ... | ... | ... | ... |
+   | LR-minimal | 4 feats | ... | ... | ... | ... | ... |
+   | LR-full | 10 feats | ... | ... | ... | ... | ... |
+   | LR-windowed | 300 feats, ridge | ... | ... | ... | ... | ... |
+   | MLP v1 | 10 × 30 | 13.53 | 64.99 | 12.92 | 11.42 | 4.01 |
+   | GRU v1 | 10 × 30 | 13.66 | 65.97 | 12.99 | 11.67 | 3.80 |
+
+5. For LR-windowed, also report the 10 features with the largest coefficient magnitudes (summed across the 30 time steps per feature). This tells you which input channels the linear model leans on and is worth comparing against the prompt-4 ablation results.
+
+6. Print a verdict:
+   - "NNs provide substantial lift over linear" if NN overall RMSE is <70% of best LR RMSE
+   - "NNs provide modest lift" if 70-90%
+   - "NNs barely beat linear" if >90% — this is a thesis-reframing finding
+
+# Requirements
+
+- Use sklearn's Ridge with alpha grid [0.01, 0.1, 1, 10, 100] and GridSearchCV with 5-fold blocked CV (sklearn's TimeSeriesSplit).
+- Fit on unscaled features first, then refit on the standard-scaled features; report both. Sometimes the scaling interacts with regularization unexpectedly.
+- No windowing code duplication — reuse dataset.py's window builder for LR-windowed.
+
+# Deliverables
+
+1. `baselines/linear_regression.py` and outputs in `baselines/outputs/`.
+2. The comparison table and verdict, appended to `SUMMARY.txt`.
+3. A feature-importance bar chart for LR-windowed (top 10 summed-coefficient features).
+4. Short summary of the purpose of the prompt and the interpretation of the results of the prompt, appended to `SUMMARY+CONCLUSION.txt`.
+
+# Out of scope
+
+- Random forests, gradient boosting, or other non-linear baselines. If linear is too weak, a separate prompt can add those.
+- Tuning any NN hyperparameters.

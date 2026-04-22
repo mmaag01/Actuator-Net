@@ -1,0 +1,60 @@
+# Context
+
+THIS PROMPT HAS BEEN OMITTED
+
+New data has been collected using the sustained-hold excitation profile from prompt 3a. The log files are in the standard data directory (same format and naming convention as existing profile logs, e.g., `SustainedHold_run1.csv` — verify the actual naming convention by looking at the directory listing before making assumptions).
+
+I need to retrain MLP and GRU with this new data included, compare to the baseline results, and specifically measure whether the hold-regime RMSE improves.
+
+# Task
+
+1. **Data inclusion check**: Verify the new sustained-hold log files are picked up by the existing data loader. If the loader uses a glob or regex, confirm it matches; if it uses an explicit allowlist, add the new files. Print the number of new samples added.
+
+2. **Re-fit the scaler**: The StandardScaler is fit on training data only. With new profile data, re-fit from scratch (do not incrementally update). Save the new scaler alongside the old one (e.g., `scaler_v2.pkl`) — do not overwrite.
+
+3. **Retrain both models** with identical hyperparameters to the baseline run (same Adam, OneCycleLR max_lr=1e-3, batch 64, patience 20, max 200 epochs, MSE loss, seq_len=30). Save checkpoints to separate paths (e.g., `checkpoints/mlp_v2.pt`) — do not overwrite baseline. Use the same random seeds as the baseline if they were fixed; if not, set them now and document the value.
+
+4. **Run the full evaluation pipeline** on the v2 models, writing outputs to a new directory `evaluate_v2/` so the baseline results remain comparable.
+
+5. **Run Test 2 (regime residuals)** on the v2 models. This is the key comparison.
+
+6. **Generate a comparison report** `diagnostics/outputs/v1_vs_v2_comparison.md` with a table:
+
+   | Metric | MLP v1 | MLP v2 | Δ | GRU v1 | GRU v2 | Δ |
+   |---|---|---|---|---|---|---|
+   | Overall RMSE | ... | ... | ... | ... | ... | ... |
+   | Overall MAE | ... | ... | ... | ... | ... | ... |
+   | Max \|err\| | ... | ... | ... | ... | ... | ... |
+   | RMSE rest | 4.006 | ... | ... | 3.797 | ... | ... |
+   | RMSE hold | 64.993 | ... | ... | 65.965 | ... | ... |
+   | RMSE transition | 11.415 | ... | ... | 11.665 | ... | ... |
+   | RMSE oscillation | 12.924 | ... | ... | 12.992 | ... | ... |
+   | Hold sample count (test) | ... | ... | ... | - | - | - |
+   | Sustained-hold runs (train) | ... | ... | ... | - | - | - |
+
+   Fill v1 values from the existing `SUMMARY.txt`. Compute v2 from the new runs.
+
+7. **Verdict block** at the end of the report:
+   - "Hold fix successful": hold-regime RMSE drops by >50% AND overall RMSE drops by >20%
+   - "Partial improvement": hold RMSE drops by 20-50% OR overall drops 5-20%
+   - "Fix did not work": hold RMSE drop <20% or overall RMSE unchanged/worse
+   Based on which, suggest next action: if successful, move to prompt 4 (ablations) and prompt 5 (accelAct fix). If partial, investigate whether the hold perturbation amplitude in 3a was too small. If failed, reconsider the ambiguous-vs-contradicted-input classification from prompt 1.
+
+# Requirements
+
+- Do not overwrite any v1 artifacts. Everything goes to `_v2`-suffixed paths.
+- Log every hyperparameter and seed to `evaluate_v2/training_config.yaml` so the run is reproducible.
+- If training takes longer than 4 hours, emit progress updates so I can watch.
+- If the new data files aren't where expected, stop and ask rather than proceeding with stale data.
+
+# Deliverables
+
+1. `v1_vs_v2_comparison.md` with the full table and verdict.
+2. New checkpoints, scaler, and evaluation outputs.
+3. A regime-RMSE bar chart comparing v1 and v2 side-by-side (4 regimes × 2 versions × 2 models = 16 bars, grouped).
+
+# Out of scope
+
+- Any architecture changes, loss changes, or feature changes.
+- Ablations on torDes or i — those are prompt 4.
+- accelAct preprocessing — that's prompt 5.

@@ -1,0 +1,51 @@
+# Context
+
+Test 5b (if it verdicts "torEst carries state" or "Ambiguous") showed that the 30-sample window is too short to resolve spring-ringing events. The loading phase that produced the trapped torque is more than 30 ms back. A longer window lets the GRU see the loading phase and learn "motor was recently commanded +140 Nm followed by sudden release → expect slow decay."
+
+Run this ONLY after Prompt 7 completes and reports its verdict.
+
+# Task
+
+Sweep GRU training over SEQ_LEN ∈ {30, 100, 300, 500, 1000}. Do NOT sweep MLP — at SEQ_LEN=1000, MLP input dimension is 10,000 which is pointless to try.
+
+For each SEQ_LEN:
+1. Retrain the GRU with identical hyperparameters to the v1 run (Adam, LR=1e-4, OneCycleLR max_lr=1e-3, batch 64, patience 20, 200 epochs max, seed fixed). Only SEQ_LEN changes.
+2. Save checkpoint to checkpoints/seq_sweep/gru_L{N}.pt.
+3. Evaluate on the v1 test split (same as all previous diagnostics).
+4. Run Test 2 regime classification on each.
+
+Produce a report `experiments/outputs/seq_len_sweep.md`:
+
+| SEQ_LEN | Time per epoch [s] | Best epoch | Overall RMSE | MAE | Max |err| | Hold RMSE | Oscillation RMSE | Transition RMSE |
+|---|---|---|---|---|---|---|---|---|
+| 30 (baseline v1) | - | 29 | 13.66 | 4.04 | 225.4 | 65.97 | 12.99 | 11.67 |
+| 100 | ... | ... | ... | ... | ... | ... | ... | ... |
+| 300 | ... | ... | ... | ... | ... | ... | ... | ... |
+| 500 | ... | ... | ... | ... | ... | ... | ... | ... |
+| 1000 | ... | ... | ... | ... | ... | ... | ... | ... |
+
+Also: track the specific error at the idx=38180 failure sample for each SEQ_LEN. This is the direct test of the ringing fix. Plot error at idx=38180 vs SEQ_LEN.
+
+# Interpretation block
+
+- "Longer windows resolve ringing" if error at idx=38180 drops below 50 Nm for SEQ_LEN >= 500
+- "Partial improvement" if it drops to 50-150 Nm range
+- "Length alone insufficient" if idx=38180 error stays above 150 Nm even at SEQ_LEN=1000 — in which case the spring state is genuinely unobservable from available features and Prompt 9 is needed
+
+# Requirements
+
+- Be defensive about memory: SEQ_LEN=1000 with batch_size=64 and 4 GRU layers of 64 hidden gives ~16M activations per batch, fine on any modern GPU but worth printing VRAM usage per config.
+- If any config fails to complete in 200 epochs, report it and move on rather than retrying.
+- Use identical train/val/test splits — do not re-fit the scaler (reuse v1's).
+
+# Deliverables
+
+1. The sweep report with table, interpretation, and idx=38180 plot.
+2. Training curves for all 5 configs on one plot.
+3. A regime-RMSE bar chart (5 configs × 4 regimes = 20 bars) with trend lines.
+
+# Out of scope
+
+- MLP — input dimension blowup makes this apples-to-oranges.
+- Feature changes — those are Prompt 9.
+- Hyperparameter tuning per SEQ_LEN — we want to isolate the effect of sequence length.

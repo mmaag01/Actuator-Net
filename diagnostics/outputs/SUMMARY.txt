@@ -83,3 +83,52 @@ Sustained-hold runs (>=500 ms):
 
 Thresholds: hold_frac<5% AND sustained_runs<20
 Verdict: Hold-deficient training set
+
+========================================================================
+[Test 5b — Window content analysis]
+========================================================================
+Failure sample: idx=38180, torAct[t]=106.6 Nm
+Sensor note: 14 unique sensor frames in 30 samples — controller cycle < 1 kHz, samples repeated
+
+torEst over 30-sample window:
+  min=-107.4  max=103.5  mean=59.4  last=-107.4 Nm
+torAct over 30-sample window (frozen at 106.6 Nm throughout):
+  min=106.6  max=106.6
+torDes over window: 0.0 Nm throughout (command dropped >30 samples ago)
+
+Lag since torDes last > 10 Nm : >30 samples (not in window) samples
+Lag since torAct last < 50 Nm : >30 samples (not in window) samples
+
+corr(torEst, torAct) = -0.0000  (NaN = torAct constant over window)
+corr(torEst, torDes) = nan  (NaN = torDes constant over window)
+torEst trajectory: 103 Nm → 43 Nm → −107 Nm across the 30-sample window
+  torEst last value = -107.4 Nm (collapsed, no longer tracks torAct)
+
+Verdict: Ambiguous
+  corr(torEst,torAct)=-0.000  corr(torEst,torDes)=nan  torEst_last=-107.4 Nm. Flag for manual inspection.
+
+Critical lookback number:
+  Last sample where torAct < 20 Nm before failure: 61 samples back (61 ms)
+  Interpretation: a window of ≥61 samples is needed to see the
+  start of the torque-loading phase. SEQ_LEN=30 (30 ms) is ~2× too short.
+
+========================================================================
+[Test 5c — Within-file lookback audit]
+========================================================================
+Severe-failure threshold: |err| > 100.0 Nm  →  234 failures
+Low-torque threshold: |torAct| < 20.0 Nm
+
+idx=38180 corrected within-file lookback: 151 samples (151 ms)
+  (Test 5b reported 61 samples — that was a cross-file artefact)
+
+Within-file lookback distribution (234 finite, 0 file-start-loaded):
+  min=151  p50=267  p75=325  p95=372  max=384 samples
+  Fraction < 100 samples : 0.0%
+  Fraction < 300 samples : 63.7%
+  Fraction < 500 samples : 100.0%
+  File-start-loaded      : 0.0%
+
+Recommended SEQ_LEN targets for Prompt 8 sweep: p50=267 samples, p75=325 samples, p95=372 samples
+
+Verdict: Lookback feasible
+  Only 0.0% of failures are file-start-loaded. SEQ_LEN targets: p50=267, p75=325, p95=372 samples.

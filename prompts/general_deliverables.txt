@@ -1,0 +1,3 @@
+# Deliverables applicable to all prompts:
+
+1. Short summary of the purpose of the prompt and the interpretation/implication of the verdict, appended to `prompts/SUMMARY+CONCLUSION.txt`.

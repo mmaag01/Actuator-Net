@@ -1,4 +1,10 @@
+# UPDATED
+
+prompts 2.3a and 2.3b have been omitted: drop the v2 dependency and train on v1 data.
+
 # Context
+
+UPDATED: 
 
 The architecture-invariance result from Test 4 (corr(pred_mlp, pred_gru) = 0.999) combined with Test 1's finding that torEst-alone is RMSE 19.8 Nm suggests the models converged on a conditional mean driven by some subset of features. To understand what they're actually using, ablate torDes and i one at a time and measure the impact on per-regime performance.
 

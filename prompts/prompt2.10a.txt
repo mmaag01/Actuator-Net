@@ -1,0 +1,41 @@
+# Context
+
+Test 5b reported "61 samples of lookback needed" but flagged this as unreliable because y_true is concatenated across files and walking backwards may cross a file boundary. Before running Prompt 8 (SEQ_LEN sweep), quantify the correct lookback distance per failure sample, respecting file boundaries.
+
+# Task
+
+Modify or add to `diagnostics/test5b_window_content_analysis.py` (or create `test5c_lookback_audit.py`):
+
+1. Load the test split with file-origin metadata preserved. Each test sample should have an associated source-file identifier. If the existing loader strips this, reconstruct it from the file list and sample counts.
+
+2. For every test sample where |torAct - pred_gru| > 100 Nm (i.e., all severe failures, not just idx=38180), compute:
+   - file-origin ID
+   - within-file sample index at the failure
+   - within-file lookback-to-last-low-torque: walk backwards through the SAME FILE only, find the last sample where |torAct| < 20 Nm. Report this distance.
+   - if no such sample exists within the file, report "file starts already loaded" and the distance to file start.
+
+3. Produce a histogram of within-file lookback distances across all severe failures. This gives the distribution that Prompt 8 needs to size its SEQ_LEN sweep correctly.
+
+4. Report:
+   - min/median/max of within-file lookback
+   - fraction of failures where lookback < 100 samples (SEQ_LEN=100 would suffice)
+   - fraction where lookback < 300 samples
+   - fraction where lookback < 500 samples
+   - fraction where the file starts already loaded (no lookback distance exists — these failures cannot be fixed by window length alone)
+
+5. Additionally, for the specific idx=38180 failure: report its within-file lookback. If the 61-sample global number was misleading, the within-file number is the real answer.
+
+6. Verdict:
+   - "Lookback feasible" if median within-file lookback < 500 samples AND < 20% of failures are file-start-loaded. Proceed to Prompt 8 with SEQ_LEN targets from the histogram.
+   - "Lookback limited" if >20% of failures are file-start-loaded. This fraction will NEVER be fixable by longer windows — only by state-carrier features (Prompt 10b).
+
+# Requirements
+
+- Analytical only, no training.
+- Append verdict block to SUMMARY.txt.
+
+# Deliverables
+
+1. The lookback histogram plot.
+2. The verdict block including the corrected idx=38180 lookback number.
+3. The SEQ_LEN values that should be tested in Prompt 8 (pick lengths at the 50th, 75th, 95th percentiles of the within-file lookback distribution, not the arbitrary {30, 100, 300, 500, 1000} ladder I originally proposed).

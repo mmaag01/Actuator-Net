@@ -1,0 +1,51 @@
+# UPDATED
+
+prompts 2.3a and 2.3b have been omitted: drop the v2 dependency and train on v1 data.
+
+# Context
+
+UPDATED: drop the v2 dependency from them (no prompt 2.3) and have them run on v1 data.
+
+Test 3 found that accelAct's high-frequency power fraction (>250 Hz) is 542× that of velAct, despite coming from EPOS4's "Sensor Fusion Filtered Fused Acceleration" register (0x4C01/6, per EPOS4-Firmware-Specification-En.pdf). The register's built-in filter is evidently insufficient for our sampling rate. Left as-is, accelAct contributes noise rather than signal, and this gets worse if we later increase SEQ_LEN.
+
+Apply a pre-feature-window smoothing pass and measure the effect. Run this AFTER prompt 3b (on v2 data and models). Independently of the ablations in prompt 4.
+
+# Task
+
+1. Add a preprocessing step in the data pipeline (in `dataset.py`, guarded by a config flag `SMOOTH_ACCEL`) that applies Savitzky-Golay smoothing to the `accelAct` column before windowing. Parameters: window=21, polyorder=3 (these match Test 3's analysis). Make window and polyorder config constants.
+
+2. Important: the smoothing must be applied per-file, not across file boundaries. Files are separate recording sessions and the signal is discontinuous at boundaries.
+
+3. The smoothing must be applied BEFORE the train/val/test split (otherwise val/test samples get smoothed using training context, which is fine — SG uses a symmetric window — but should be explicit). Actually, more precisely: smoothing uses only current-file samples, which is safe for chronological splits because the SG window near split boundaries uses edge handling (mode='interp' or 'nearest'). Document this in a comment.
+
+4. Retrain MLP and GRU on the smoothed data. Same hyperparameters as v2. Save as v3.
+
+5. Run Test 2 and the ablations summary style comparison:
+
+   | Model | v2 (raw accel) RMSE | v3 (smoothed accel) RMSE | Δ | v2 hold RMSE | v3 hold RMSE | v2 osc RMSE | v3 osc RMSE |
+
+6. Additionally, re-run Test 3 on the smoothed training file and confirm the HF power ratio has dropped below the 2.0× threshold.
+
+# Interpretation block
+
+- "Smoothing helped" if overall RMSE improves >5% AND osc RMSE improves (acceleration matters most during fast transients)
+- "Smoothing neutral" if overall RMSE change < 5% in either direction
+- "Smoothing hurt" if overall RMSE degrades >5% (would suggest the HF content of accelAct, even if noisy, carried useful signal — unlikely but possible if the controller's filter aliases rather than low-passes)
+
+# Requirements
+
+- The config flag SMOOTH_ACCEL must default to True after this change if smoothing helps or is neutral. If it hurts, default to False and flag this clearly.
+- Keep the v2 training path intact — do not overwrite.
+- All outputs in `evaluate_v3/`.
+
+# Deliverables
+
+1. Updated `dataset.py` with smoothing guard.
+2. New checkpoints, scaler, evaluation outputs, Test 2 and Test 3 re-runs.
+3. Side-by-side comparison report `v2_vs_v3_comparison.md`.
+4. A one-paragraph thesis-ready description of the finding, suitable for the methods or results section. Should mention the hardware register source (0x4C01/6), the measured HF power contamination (542× from Test 3), and the SG parameters used.
+
+# Out of scope
+
+- Comparing different smoothing methods (Butterworth, moving average) — SG is sufficient; method-comparison is scope creep.
+- Smoothing other features. velAct's HF power fraction is effectively 0, so it doesn't need smoothing. posAct and posErr likewise.

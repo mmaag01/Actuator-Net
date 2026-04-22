@@ -1,0 +1,66 @@
+# Context
+
+Test 5 (diagnostics/test5_failure_window_inspection.py) dumped the full 30×10 input window for the worst-error sample of MLP and GRU as CSVs. The failure at idx 38180 has torDes = 0, torAct = +106 Nm, i < 0. This is a post-release ringing event — the controller has commanded zero but the HEJ-90's spring hasn't discharged.
+
+Before trying longer windows or new features, confirm what the existing 30-sample window actually contains at the moment of failure. Specifically: does torEst carry the 106 Nm state, or has it already collapsed to follow the command?
+
+If torEst has collapsed, then the model has no state information at all and longer windows may not help. If torEst still carries momentum, then 30 ms is simply too short to resolve the decay and longer windows are the right fix.
+
+# Task
+
+Create `diagnostics/test5b_window_content_analysis.py`:
+
+1. Load the failure-window CSVs produced by test5 for both MLP and GRU.
+
+2. For each of the 30 samples in the window leading up to the failure sample, plot every feature on its own small subplot, 10 subplots total, with the final sample's target value `torAct[t]` shown as a horizontal reference line. This is a "what did the model see vs what was it supposed to predict" visualization.
+
+3. Compute and print:
+   - torEst over the window: min, max, mean, last value
+   - torAct over the window (dumped by test5): min, max, mean, last value, and the sample index where torAct last exceeded 50 Nm
+   - The lag between the last sample where torDes > 10 Nm and the failure sample (how long ago did the command drop?)
+   - The lag between the last sample where torAct < 50 Nm and the failure sample (how long has the ringing been going?)
+
+4. Key diagnostic: is torEst tracking torAct or tracking torDes during the window?
+   - Compute corr(torEst[0:30], torAct[0:30]) for the window
+   - Compute corr(torEst[0:30], torDes[0:30]) for the window
+   - The winner tells you whether torEst is a useful state carrier for this kind of event.
+
+5. Produce verdict:
+   - "torEst carries state": corr(torEst, torAct) > 0.7 AND torEst's last value > 50 Nm. Longer SEQ_LEN will help directly.
+   - "torEst follows command": corr(torEst, torDes) > 0.7 AND torEst's last value < 20 Nm. Longer SEQ_LEN won't help alone — need an explicit state feature.
+   - "Ambiguous": neither correlation clean. Report both and flag for manual inspection.
+
+6. Additionally: walk BACKWARDS from the failure sample through the full test stream (not just the window) and find the last sample where torAct < 20 Nm. Report this distance in samples. This tells you how much lookback would be needed for any window-based model to see the "loading phase" before the ringing started.
+
+# Requirements
+
+- Purely analytical. No training, no model loading required — Test 5 already has the data dumped.
+- Keep all outputs in diagnostics/outputs/.
+- Append the verdict block to SUMMARY.txt.
+
+# Deliverables
+
+1. The 10-subplot window visualization (pasted into final response via present_files).
+2. The verdict block.
+3. The critical number: samples-back-to-last-low-torque. This determines whether SEQ_LEN=200 or SEQ_LEN=500 or longer is needed.
+
+# Interpretation
+Interpretation:
+
+The verdict is manually clear despite the NaN correlations. Both torAct and torDes are perfectly constant over the 30-sample window (std = 0), 
+so Pearson correlation is undefined — but the torEst trajectory tells the story directly: it ran 103 → 43 → −107 Nm over 30 ms, 
+dramatically overshooting past zero in the direction of the (negative) current. 
+At the failure timestep, torEst = −107 Nm while torAct = +106.6 Nm — they are nearly equal in magnitude and opposite in sign. 
+torEst has fully followed the command dropout and overshot; it carries zero useful state.
+
+The lookback number (61 ms) needs a caveat. The y_true array is concatenated across all files. Walking back 61 samples may cross a file boundary 
+into a different recording that happens to start near zero torque, making the number unreliable. The true lookback to capture the loading ramp 
+for a 105 Nm step (~90 ms ramp + ~150 ms hold = 240 ms minimum) is closer to 240–330 samples, not 61.
+
+Does longer SEQ_LEN help? Partially. A window of ~300 samples would capture the torEst decay trajectory (103 → 43 → −107 Nm), which contains 
+signal about the spring-discharge rate. A GRU could in principle learn "torEst decaying from large positive" → "torque is still stored." 
+But torDes = 0 throughout, so the model still has no commanded-torque signal — it must infer everything from the torEst and i history. 
+The more direct fix is a feature that explicitly encodes the torque stored in the spring (e.g., a lagged torEst or a running maximum of torAct over the last N samples).
+
+Summary for prompt 3 decision: Longer SEQ_LEN (~300 samples) is necessary but not sufficient. The dominant fix is a new feature — specifically something 
+that carries the "max recent torAct" or integrates torEst over time — since torEst at the failure sample has already gone deeply negative and cannot be trusted.
