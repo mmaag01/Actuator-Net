@@ -1,0 +1,39 @@
+# Context
+
+Prompt 8 showed monotonic degradation in RMSE as SEQ_LEN increased. Before concluding this is a genuine architectural limit rather than an under-training artefact, verify whether the longer-SEQ configs converged.
+
+# Task
+
+For each SEQ_LEN in {30, 267, 325, 372, 400}, load the saved training history (loss_history CSV or equivalent) and:
+
+1. Plot train and val loss curves for all 5 configs on one figure (log y-axis). Annotate the best-val-epoch and stopped-epoch for each.
+
+2. Compute for each config:
+   - epochs-to-best-val
+   - val loss at best epoch and at stopped epoch
+   - slope of val loss over the last 10 epochs before stopping (simple linear fit)
+   - whether val loss was monotonically decreasing over the last 5 epochs before stopping
+
+3. Verdict per config:
+   - "Converged" if slope over last 10 epochs is approximately zero (absolute slope < 1% of best val loss)
+   - "Plateauing" if slope is small negative
+   - "Still improving at stop" if slope is clearly negative (early stopping terminated prematurely)
+
+# Interpretation
+
+- If all configs verdict "Converged" → Prompt 8 result stands: longer windows genuinely don't help on this setup, move to Prompt 10b.
+- If SEQ_LEN ≥ 267 configs verdict "Still improving at stop" → re-run those configs with patience=50 and LR schedule scaled to length. This is a 1-day retrain.
+- If mixed → report per-config.
+
+# Deliverables
+
+1. Training-curve plot.
+2. Convergence verdict per config.
+
+# Deliverables applicable to all prompts
+
+1. Short summary of the purpose of the prompt and the interpretation/implication of the verdict, appended to prompts/SUMMARY+CONCLUSION.txt.
+
+# Out of scope
+
+Anything involving retraining. This is a post-hoc analysis of existing logs only.

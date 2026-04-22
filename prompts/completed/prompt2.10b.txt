@@ -1,0 +1,106 @@
+# Context
+
+Reframe: the HEJ-90 is a geared electromechanical actuator (~28.17:1 reduction, 4761/169), not a series-elastic actuator. Joint-side torque is measured by a dedicated external torque sensor that updates at ~467 Hz (Test 5b observation: 14 unique frames in 30 samples at 1 kHz logging). Joint-side mechanical backlash is 0.48° average (0.35-0.61° range), which maps to ~13.5° at the motor rotor.
+
+Test 5c + Prompt 8 established that: (i) all 234 severe failures have 151-384 samples of within-file lookback, (ii) longer GRU windows up to SEQ_LEN=400 do NOT fix them, (iii) the bottleneck is feature sufficiency, not window length.
+
+Test 5b revealed that at the canonical failure idx=38180, torAct holds at +106.6 Nm while torEst swings 103 → 43 → −107 Nm, with torDes=0 throughout (PLC profile is velocity-controlled, k_d=18). The current physical hypothesis: the motor rotor is ringing through gear backlash while the joint is statically held by friction. Motor-side dynamics (velMot, posMot) are not logged. The external torque sensor sees the joint staying pinned; torEst picks up the rotor-acceleration compensation term.
+
+Formula for torEst (from EPOS4 ANYdrive addendum firmware spec):
+  torEst = k_d*(velDes - velAct) + torDes − (1/η_gear) * LP(20Hz) * J_rotor * N_gear * d(velMot)/dt
+
+With k_d=18, N_gear=4761/169, J_rotor=599 g·cm² = 5.99e-5 kg·m², η_gear forward=0.923 / reverse=0.9352. For position-generated velocity-controlled profiles (PLC, PMS): k_d=18, feedforward torDes=0 in logs. For torque-controlled profiles (tStep, TMS): k_d=0, torDes is user-commanded.
+
+The first two terms of torEst are reconstructible from logged features. The third (rotor-acceleration compensation) is not directly reconstructible because velMot is not logged — but its contribution is isolable as `torEst - torDes - 18*(velDes - velAct)`. This isolated residual is the signal that encodes motor-side backlash ringing.
+
+# Task
+
+## Part A — signal-decomposition verification
+
+Create `experiments/outputs/hej90_signal_audit.md`. Pre-known values (do not re-derive, document them):
+- Gear reduction 4761/169 ≈ 28.17
+- J_rotor = 599 g·cm² = 5.99e-5 kg·m²
+- k_d = 18 (velocity-controlled profiles) or 0 (torque-controlled)
+- Gear forward efficiency = 0.9230
+- Gear reverse efficiency = 0.9352
+- Gear efficiency = 1/0.923 if sgn(torKdEst + torAct) == sgn(Motor Velocity), 0.9352 sgn(torKdEst + torAct) =/= sgn(Motor Velocity)
+- Backlash: 0.35–0.61°, avg 0.48° (joint-side); ≈13.5° motor-side
+- Logged signals: torDes, posDes, velDes, posAct, velAct (=SFJV filtered through LP(200Hz)), accelAct, i, torEst, torAct
+- NOT logged: posMot, velMot, SFJP, SFJV-unfiltered
+- torAct sensor: external, joint-side, ~467 Hz update rate
+- JPVTC controller: 2.5 kHz internal, logged at 1 kHz
+
+Verification tasks (analytical, on v1 training data):
+1. Define `rotorAccelEstimate[t] = torEst[t] - torDes[t] - 18*(velDes[t] - velAct[t])` on all velocity-controlled profiles (PLC, PMS). Plot its distribution. Expected: near-zero during steady-state, large during transients.
+2. Separately on torque-controlled profiles (tStep, TMS), define `rotorAccelEstimate[t] = torEst[t] - torDes[t]` (since k_d=0). Plot its distribution.
+3. For the failure window at idx=38180 (in `PLC_0.50-10_oldLim_exp`), plot the three decomposed terms over the 30 samples leading up to failure: feedforward (torDes=0), velocity-loop output (18*(velDes-velAct)), and rotorAccelEstimate. Verify that the rotorAccelEstimate term carries nearly all the swing.
+4. Sensor-quantization floor: given torAct updates at ~467 Hz with 1 kHz ZOH logging, compute the lower bound on achievable RMSE that comes from ZOH timing alone. Use the RMSE between torAct and its linear-interpolation over the 14-frames-per-30-samples schedule. Report this as an explicit noise floor.
+
+## Part B — engineered features
+
+Add five features in `dataset.py`, each with enforced causality (assert that the feature at time t uses only signals at time ≤ t-50 for lagged features, time ≤ t for fully-causal):
+
+1. `torDes_max_abs_500ms` — max of |torDes| over [t-500, t] samples. Fully causal (torDes is input, not target).
+2. `torAct_max_abs_500ms_lag100` — max of |torAct| over [t-600, t-100]. Target-derived, requires 100-sample lag. Assert.
+3. `posAct_range_500ms` — max(posAct) − min(posAct) over [t-500, t]. Fully causal. Distinguishes "joint moved recently" from "joint stationary."
+4. `rotorAccelEstimate[t]` — the isolated third term computed as above. For each sample, branch on profile type (use the `kd=0` formula for tStep/TMS, the `kd=18` formula for PLC/PMS). The profile type can be inferred from the source filename in the dataset loader, or added as a column during log ingestion.
+5. `rotorAccelEstimate_max_abs_500ms` — max of |rotorAccelEstimate| over [t-500, t]. Fully causal (rotorAccelEstimate depends on torEst/torDes/velDes/velAct at time t, not torAct). This is the primary candidate feature for the backlash-ringing failure mode.
+
+Causality assertion: run a test that for each feature, perturbing torAct at time t leaves the feature at time t unchanged (fully causal), or perturbing torAct at time t' > t-100 leaves the feature at time t unchanged (lagged causal).
+
+## Part C — retrain and evaluate
+
+Start with SEQ_LEN=30 (v1 baseline length, to isolate feature effects from window effects). Retrain MLP and GRU with each feature added independently, then all five together. Six configs × 2 models = 12 runs.
+
+| Config | Features added | Overall RMSE | Hold RMSE | Osc RMSE | Err idx=38180 | Mean severe-fail \|err\| |
+|---|---|---|---|---|---|---|
+| baseline (v1) | none | 13.66 | 65.97 | 12.99 | 215.8 (GRU) | 147.33 |
+| +torDes_max | feature 1 | ... | ... | ... | ... | ... |
+| +torAct_max_lag | feature 2 | ... | ... | ... | ... | ... |
+| +posAct_range | feature 3 | ... | ... | ... | ... | ... |
+| +rotorAccelEst | feature 4 | ... | ... | ... | ... | ... |
+| +rotorAccelEst_max | feature 5 | ... | ... | ... | ... | ... |
+| +all five | all | ... | ... | ... | ... | ... |
+
+Same hyperparameters as v1. Same seeds. Checkpoints to `checkpoints/state_features_v2/`.
+
+Also compute ablation-from-full: train an additional config with all five features then remove them one at a time from the trained model at inference (by zeroing the feature column after scaling). This tells you which features the "all five" model actually relies on, complementary to which single additions help most.
+
+## Part D — winning feature + longer window
+
+ONLY if any single feature in Part C reduces `Err idx=38180` by >70% OR mean severe-failure |err| by >50%: retrain that winning config with SEQ_LEN=267 (the p50 from Test 5c). This tests whether feature and length effects compound for the severe failures specifically, even though length alone didn't help in Prompt 8.
+
+# Interpretation
+
+- "rotorAccelEstimate resolves backlash ringing" if feature 4 or 5 alone reduces severe-failure |err| by >50%. Confirms the motor-side-invisibility hypothesis and gives a concrete fix.
+- "Magnitude features sufficient" if features 2 or 3 alone reduce severe-failure |err| by >50% without needing rotorAccelEstimate. Means simple history features work and the motor-side hypothesis is not load-bearing.
+- "Combination wins cleanly" if all-five outperforms any single by >20%. Thesis narrative: backlash-specific features matter in combination.
+- "No single feature recovers" if no config reduces severe-failure |err| by >30%. Thesis narrative: the logging setup (joint-side-only telemetry) is fundamentally insufficient for this failure class, motor-side signals must be added to the hardware logging. This is a testable architectural recommendation.
+- "Length + feature compound" if Part D's SEQ_LEN=267 + winning feature beats either alone by >30% on severe failures.
+
+# Requirements
+
+- Causality assertions must halt training if violated. Non-negotiable.
+- For Part A, report the sensor-quantization RMSE floor explicitly — this is a bound on achievable performance that goes into the thesis.
+- Do not overwrite v1 artefacts. All new checkpoints under `checkpoints/state_features_v2/`.
+- Record per-config ablation-from-full so we know what the model USES versus what individual additions help.
+- Profile type (PLC/PMS velocity-controlled vs tStep/TMS torque-controlled) must be available at feature-construction time. If not already in the loader, add it as a column.
+
+# Deliverables
+
+1. `hej90_signal_audit.md` with the three decomposition plots and the sensor-quantization RMSE floor.
+2. The 12-run results table from Part C and the interpretation block.
+3. A time-series plot over samples 38150-38250 with traces for: torAct (truth), v1 GRU prediction, best-single-feature GRU prediction, all-five-features GRU prediction.
+4. If Part D runs: the length+feature combined result, with before/after on severe failures.
+5. Causality-check test script runnable in CI.
+
+# Deliverables applicable to all prompts
+
+1. Short summary of the purpose of the prompt and the interpretation/implication of the verdict, appended to `prompts/SUMMARY+CONCLUSION.txt`.
+
+# Out of scope
+
+- Combining with residual learning (Prompt 10) or accelAct smoothing (Prompt 5). Isolate effects first.
+- Changes to architectures.
+- Dropout, weight decay, or other regularization.
+- Any claim about hardware modifications (adding motor-side telemetry) as a separate experiment — that's a thesis conclusion, not a new training run.

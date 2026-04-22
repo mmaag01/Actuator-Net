@@ -9,9 +9,17 @@ RESULTS_DIR    = PROJECT_ROOT / "results"
 USE_MAIN    = True
 USE_CRASHES = False
 USE_OTHER   = False
-MAIN_TYPES = ['tStep', 'TMS', 'PMS', 'PLC']
-CRASHES_TYPES = ['tStep', 'TMS']
-OTHER_TYPES = ['tStep', 'tStep CmdErrs' 'TMS', 'PMS', 'Misc']
+
+USE_PLC             = True
+USE_PMS             = True
+USE_TMS             = True
+USE_tStep           = True
+USE_tStep_CmdErrs   = False
+USE_Misc            = False
+ZERO_OFFSET         = False
+
+UNITS={'t':'s', 'tor':'Nm', 'vel':'rad/s', 
+               'pos':'rad', 'accel':'rad/s^2', 'i':'A'}
 
 # ── Features ─────────────────────────────────────────────────────────────────
 FEATURE_COLS = [
@@ -48,6 +56,11 @@ WEIGHT_DECAY     = 0.0
 TRAIN_RATIO = 0.70
 VAL_RATIO   = 0.15
 # TEST_RATIO  = 1 - TRAIN_RATIO - VAL_RATIO = 0.15  (implied)
+
+# ── Acceleration smoothing ────────────────────────────────────────────────────
+SMOOTH_ACCEL = True   # apply Savitzky-Golay smoothing to accelAct before windowing
+SG_WINDOW    = 21     # must be odd; matches Test 3 analysis
+SG_POLYORDER = 3
 
 # ── Reproducibility ───────────────────────────────────────────────────────────
 SEED = 42

@@ -8,24 +8,21 @@ UPDATED:
 
 The architecture-invariance result from Test 4 (corr(pred_mlp, pred_gru) = 0.999) combined with Test 1's finding that torEst-alone is RMSE 19.8 Nm suggests the models converged on a conditional mean driven by some subset of features. To understand what they're actually using, ablate torDes and i one at a time and measure the impact on per-regime performance.
 
-This should be run AFTER prompt 3b (use the v2 models and data), so the results reflect the hold-enriched dataset.
-
 # Task
 
 Create `experiments/ablations.py` that runs three training configurations:
 
-- **Config A (baseline v2)**: all 10 features. Use existing v2 checkpoint — do not retrain.
 - **Config B (no torDes)**: FEATURE_COLS = 10 features minus torDes (9 features). Retrain MLP and GRU from scratch.
 - **Config C (no i)**: FEATURE_COLS = 10 features minus i (9 features). Retrain MLP and GRU from scratch.
 - **Config D (no torDes AND no i)**: 8 features. Retrain both. This is the "pure proprioception" config closest to Hwangbo's original input set (pos-error + vel history).
 
-Same hyperparameters as prompt 3b. Same seeds. Save checkpoints to `checkpoints/ablations/{config}_{model}.pt`.
+Same hyperparameters as v1. Same seeds. Save checkpoints to `checkpoints/ablations/{config}_{model}.pt`.
 
 For each config, run the regime-residual analysis (Test 2). Produce a comparison table:
 
 | Config | Features dropped | MLP overall RMSE | MLP hold RMSE | MLP osc RMSE | GRU overall RMSE | GRU hold RMSE | GRU osc RMSE |
 |---|---|---|---|---|---|---|---|
-| A (baseline v2) | none | ... | ... | ... | ... | ... | ... |
+| A | none | 13.53 | 64.99 | 12.92 | 13.66 | 65.97 | 12.99 |
 | B | torDes | ... | ... | ... | ... | ... | ... |
 | C | i | ... | ... | ... | ... | ... | ... |
 | D | torDes, i | ... | ... | ... | ... | ... | ... |
@@ -54,6 +51,10 @@ For each Config, also compute Spearman rank correlation between that model's pre
 1. `ablations_summary.md` with the table and interpretation.
 2. Training curves for all 8 new runs on one plot (faceted by model, coloured by config).
 3. A 2-sentence recommendation: if torDes is load-bearing, the thesis should emphasize that the feed-forward command is the primary signal and the NN is learning the error model. If i is load-bearing, the NN is essentially doing sensor fusion of the torque-from-current estimate. These are different thesis narratives.
+
+# Deliverables applicable to all prompts
+
+1. Short summary of the purpose of the prompt and the interpretation/implication of the verdict, appended to `prompts/SUMMARY+CONCLUSION.txt`.
 
 # Out of scope
 

@@ -1,0 +1,67 @@
+# Context
+
+Test 5c established that all 234 severe failures have within-file lookback between 151 and 384 samples, with zero file-start-loaded cases. SEQ_LEN=30 sees at most 20% of the shortest loading phase. This sweep tests whether longer sequence windows resolve the catastrophic failures (particularly the idx=38180 cluster) and quantifies the diminishing-returns curve.
+
+GRU-only. MLP at SEQ_LEN=400 would have input dimension 4000, which is not a meaningful comparison and would not replicate Hwangbo's architecture in any useful way.
+
+# Task
+
+Retrain the GRU at SEQ_LEN ∈ {267, 325, 372, 400}. These are the p50/p75/p95 percentiles of the within-file lookback distribution from Test 5c, plus one point beyond the observed max (384) to confirm saturation.
+
+For each SEQ_LEN:
+1. Retrain GRU with identical hyperparameters to v1 (Adam, LR=1e-4, OneCycleLR max_lr=1e-3, batch 64, patience 20, 200 epochs max, MSE loss, seed fixed). Only SEQ_LEN changes.
+2. Save checkpoint to `checkpoints/seq_sweep/gru_L{N}.pt`.
+3. Evaluate on the v1 test split. Reuse the v1 scaler — do not re-fit.
+4. Run Test 2 regime classification.
+
+Also include SEQ_LEN=30 as the baseline row (from v1), so the table is complete without re-training the baseline.
+
+Produce `experiments/outputs/seq_len_sweep.md`:
+
+| SEQ_LEN | Time/epoch [s] | VRAM [GB] | Best epoch | Overall RMSE | MAE | Max |err| | Hold RMSE | Osc RMSE | Transition RMSE | Rest RMSE | Err at idx=38180 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 30 (v1) | - | - | 29 | 13.66 | 4.04 | 225.4 | 65.97 | 12.99 | 11.67 | 3.80 | 215.8 |
+| 267 | ... | ... | ... | ... | ... | ... | ... | ... | ... | ... | ... |
+| 325 | ... | ... | ... | ... | ... | ... | ... | ... | ... | ... | ... |
+| 372 | ... | ... | ... | ... | ... | ... | ... | ... | ... | ... | ... |
+| 400 | ... | ... | ... | ... | ... | ... | ... | ... | ... | ... | ... |
+
+Additionally: for EACH SEQ_LEN config, evaluate the model on ALL 234 severe-failure samples identified by Test 5c (not just idx=38180). Compute:
+- mean |err| across the 234 samples
+- fraction of the 234 samples where |err| drops below 100 Nm after the longer window
+- fraction where |err| drops below 50 Nm
+
+Report this as a second table in the same document.
+
+# Interpretation block
+
+- "Longer windows resolve ringing broadly" if SEQ_LEN=372 reduces mean severe-failure |err| by >70% AND overall RMSE drops >20%
+- "Longer windows partially resolve ringing" if severe-failure |err| drops 30-70% or overall RMSE drops 10-20%
+- "Length alone insufficient" if severe-failure |err| drops <30% even at SEQ_LEN=400 — in which case state-carrier features (Prompt 10b) are required
+- "Diminishing returns at p75" if SEQ_LEN=372 and 400 are within 2% RMSE of SEQ_LEN=325 — means 325 is the efficient choice going forward
+- Flag separately: if overall RMSE worsens at SEQ_LEN=400 compared to SEQ_LEN=372, report as "saturation + overfit" and note that GRU capacity is being spent on noise past the p95 lookback
+
+# Requirements
+
+- Print VRAM peak per config. At SEQ_LEN=400 with batch 64 and 4 GRU layers × 64 hidden, should be well under 8 GB but worth measuring.
+- Use identical train/val/test splits — do not re-fit the scaler.
+- If any config fails to converge in 200 epochs, report it and move on rather than retrying with more epochs. Convergence failure IS a result.
+- The idx=38180 error column must be computed on the SAME test sample index across all configs (i.e., the sample at global test-split position 38180, regardless of how the window construction changes around it).
+
+# Deliverables
+
+1. The sweep report with both tables and interpretation.
+2. Training curves for all 4 new configs + baseline on one plot (5 curves, coloured by SEQ_LEN).
+3. A plot of mean severe-failure |err| vs SEQ_LEN (5 points). This is the single most informative figure for the thesis — it directly answers "how much does lookback help?"
+4. A plot of prediction vs truth over samples 38150-38250 for baseline and SEQ_LEN=372 overlaid. Should make the improvement (or lack thereof) visually obvious.
+
+# Deliverables applicable to all prompts
+
+1. Short summary of the purpose of the prompt and the interpretation/implication of the verdict, appended to `prompts/SUMMARY+CONCLUSION.txt`.
+
+# Out of scope
+
+- MLP — input dimension blowup makes this apples-to-oranges.
+- Feature changes — that's Prompt 10b.
+- Hyperparameter tuning per SEQ_LEN — isolate the effect of sequence length.
+- Combining longer windows with residual learning (Prompt 10) — combinations come after single-variable sweeps.

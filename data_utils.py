@@ -6,22 +6,21 @@ import glob
 class ProcessRawData:
     def __init__(
         self,
-        locIn="Actuator Net/Raw Data",
-        locOut="Actuator Net/Data",
-        path=r"C:\Users\maxma\OneDrive\ETH\Bachelors_Thesis\Data Collection",
         MainDir = ["tStep", "TMS", "PMS", "PLC"],
         CrashesDir = ["tStep", "TMS"],
         OtherDir = ["tStep", "tStep CmdErrs", "TMS", "PMS", "Misc"],
+        locIn="Actuator Net/Raw Data",
+        locOut="Actuator Net/Data",
+        path=r"C:\Users\maxma\OneDrive\ETH\Bachelors_Thesis\Data Collection",
     ):
         self.MainDir = MainDir
         self.CrashesDir = CrashesDir
         self.OtherDir = OtherDir
         self.locIn = locIn
         self.locOut = locOut
-
-        self.base_path = Path(path)
-        self.input_dir = self.base_path / locIn
-        self.output_dir = self.base_path / locOut
+ 
+        self.input_dir = Path(path) / locIn
+        self.output_dir = Path(path) / locOut
         self.input_dir_main = self.input_dir / "Main"
         self.output_dir_main = self.output_dir / "Main"
         self.input_dir_fails = self.input_dir / "Crashes"
@@ -29,13 +28,17 @@ class ProcessRawData:
         self.input_dir_other = self.input_dir / "Other"
         self.output_dir_other = self.output_dir / "Other"
 
-        self.file_list = []
-        self.file_list_main, self.file_list_fails, self.file_list_other = [], [], []
+        self.generateFileLists()
 
         if MainDir == [] and CrashesDir == [] and OtherDir == []:
             raise ValueError("No Input folder selected.")
-
-        for loc in MainDir:
+        
+        self.raw = None
+        self.df = None
+        
+    def generateFileLists(self):
+        self.file_list, self.file_list_main, self.file_list_fails, self.file_list_other = [], [], [], []
+        for loc in self.MainDir:
             file_import = self.input_dir_main / loc
             file_export = self.output_dir_main / loc
             
@@ -49,7 +52,7 @@ class ProcessRawData:
             file_list = sorted(glob.glob(str(file_import / "*.csv")))
             self.file_list_main.extend(file_list)
 
-        for loc in CrashesDir:
+        for loc in self.CrashesDir:
             file_import = self.input_dir_fails / loc
             file_export = self.output_dir_fails / loc
             
@@ -63,7 +66,7 @@ class ProcessRawData:
             file_list = sorted(glob.glob(str(file_import / "*.csv")))
             self.file_list_fails.extend(file_list)
 
-        for loc in OtherDir:
+        for loc in self.OtherDir:
             file_import = self.input_dir_other / loc
             file_export = self.output_dir_other / loc
             
@@ -79,9 +82,6 @@ class ProcessRawData:
         self.file_list.extend(self.file_list_main)
         self.file_list.extend(self.file_list_fails)
         self.file_list.extend(self.file_list_other)
-
-        self.raw = None
-        self.df = None
 
     # Read one .csv file with the format output by the motor controller,
     # apply unit conversions, and store the data in a pandas dataframe
@@ -206,34 +206,31 @@ class ProcessRawData:
 
 class ImportData:
     def __init__(self,
-        path=r"C:\Users\maxma\OneDrive\ETH\Bachelors_Thesis\Data Collection\Actuator Net\Data",
+        zero_offset=False,
         units={'t':'s', 'tor':'Nm', 'vel':'rad/s', 
                'pos':'rad', 'accel':'rad/s^2', 'i':'A'},
-        zero_offset=False,
+        path=r"C:\Users\maxma\OneDrive\ETH\Bachelors_Thesis\Data Collection\Actuator Net\Data",
     ):
         self.units = units
         self.zero_offset = zero_offset
         self.cols = ['t', 'torDes', 'posDes', 'velDes', 'torAct', 'posAct', 'velAct','accelAct', 'i', 'velErr', 'posErr', 'torKdEst', 'torEst', 'i2t']
-        self.base_path = Path(path)
         self.file_list = []
 
-        self.path_main = self.base_path / "Main"
-        self.path_fails = self.base_path / "Crashes"
-        self.path_other = self.base_path / "Other"
-        self.main_types = ["tStep", "TMS", "PMS", "PLC"]
-        self.fails_types = ["tStep", "TMS"]
-        self.other_types = ["tStep", "tStep CmdErrs", "TMS", "PMS", "Misc"]
+        self.path_main = Path(path) / "Main"
+        self.path_fails = Path(path) / "Crashes"
+        self.path_other = Path(path) / "Other"
+        self.main_types = ['PLC', 'PMS', 'TMS', 'tStep']
+        self.fails_types = ['TMS', 'tStep']
+        self.other_types = ['PMS', 'TMS', 'tStep', 'tStep CndErrs', 'Misc']
 
         self.file_list_main = sorted(glob.glob(str(self.path_main / "*.csv")))
         self.file_list_fails = sorted(glob.glob(str(self.path_fails / "*.csv")))
         self.file_list_other = sorted(glob.glob(str(self.path_other / "*.csv")))
 
-        self.main_dataset = []
-        self.fails_dataset = []
-        self.other_dataset = []
         self.combined = []
 
     def importMain(self, types = None):
+        self.main_dataset = []
         if types is None: types = self.main_types
         for type in types:
             path = self.path_main / type
@@ -241,9 +238,9 @@ class ImportData:
                 print(f"Failed to import Main: Folder does not exist ({path})")
                 break
             file_list = sorted(glob.glob(str(path / "*.csv")))
-            print(f"{len(file_list)} found files at {path}.")
+            print(f"Loading {len(file_list)} {type} files from Main")
+            #print(f"{len(file_list)} found files at {path}.")
             for i, file in enumerate(file_list):
-                print("Reading file:", file)
                 df = pd.read_csv(file, usecols=self.cols)
                 assert len(df.columns.tolist()) == len(self.cols), f"{Path(file).stem}: expected columns {self.cols}, got {df.columns.tolist()}."
                 df['category'] = 'main'
@@ -251,11 +248,12 @@ class ImportData:
                 df['file_name'] = Path(file).stem  # Store filename
                 df['type'] = type # Store input type
                 self.main_dataset.append(df)
-                print(f"Loaded File Main/{type}/{Path(file).name}: {len(df)} rows")
-        self.main_combined = pd.concat(self.main_dataset, ignore_index=True)
+                #print(f"Loaded File Main/{type}/{Path(file).name}: {len(df)} rows")
+        #self.main_combined = pd.concat(self.main_dataset, ignore_index=True)
         return self.main_dataset
 
     def importFails(self, types = None):
+        self.fails_dataset = []
         if types is None: types = self.fails_types
         for type in types:
             path = self.path_fails / type
@@ -263,7 +261,8 @@ class ImportData:
                 print(f"Failed to import Crashes: Folder does not exist ({path})")
                 break
             file_list = sorted(glob.glob(str(path / "*.csv")))
-            print(f"{len(file_list)} found files at {path}.")
+            print(f"Loading {len(file_list)} {type} files from Crashes")
+            #print(f"{len(file_list)} found files at {path}.")
             for i, file in enumerate(file_list):
                 df = pd.read_csv(file, usecols=self.cols)
                 assert len(df.columns.tolist()) == len(self.cols), f"{Path(file).stem}: expected columns {self.cols}, got {df.columns.tolist()}."
@@ -272,10 +271,11 @@ class ImportData:
                 df['file_name'] = Path(file).stem  # Store filename
                 df['type'] = type # Store input type
                 self.fails_dataset.append(df)
-                print(f"Loaded File Crashes/{type}/{Path(file).name}: {len(df)} rows")
+                #print(f"Loaded File Crashes/{type}/{Path(file).name}: {len(df)} rows")
         return self.fails_dataset
 
     def importOther(self, types = None):
+        self.other_dataset = []
         if types is None: types = self.other_types
         for type in types:
             path = self.path_other / type
@@ -283,7 +283,8 @@ class ImportData:
                 print(f"Failed to import Other: Folder does not exist ({path})")
                 break
             file_list = sorted(glob.glob(str(path / "*.csv")))
-            print(f"{len(file_list)} found files at {path}.")
+            print(f"Loading {len(file_list)} {type} files from Other")
+            #print(f"{len(file_list)} found files at {path}.")
             for i, file in enumerate(file_list):
                 df = pd.read_csv(file, usecols=self.cols)
                 assert len(df.columns.tolist()) == len(self.cols), f"{Path(file).stem}: expected columns {self.cols}, got {df.columns.tolist()}."
@@ -292,14 +293,8 @@ class ImportData:
                 df['file_name'] = Path(file).stem  # Store filename
                 df['type'] = type # Store input type
                 self.other_dataset.append(df)
-                print(f"Loaded File Other/{type}/{Path(file).name}: {len(df)} rows")
+                #print(f"Loaded File Other/{type}/{Path(file).name}: {len(df)} rows")
         return self.other_dataset
-    
-    def importAll(self):
-        df = []
-        df_main = self.importMain()
-        df_fails = self.importFails()
-        df_other = self.importOther()
 
     def combineDatasets(self, datasets = [], all = False):
         if all:

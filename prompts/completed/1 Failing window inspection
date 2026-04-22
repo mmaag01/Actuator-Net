@@ -1,3 +1,7 @@
+# Title
+
+Inspect the failing window at t \approx 4.8s
+
 # Context
 
 Previous diagnostics identified that both MLP and GRU models fail catastrophically on "hold" regime samples (771 test samples, RMSE ~65 Nm, contributing ~46% of total squared error despite being 2% of samples). The canonical failure is at t≈4.8s where predicted torque drops to ~0 while actual torque holds at +105 Nm.

@@ -1,0 +1,71 @@
+# Context
+
+Per-profile evaluation revealed that v1 model performance varies by factor 180x across profile types: tStep GRU RMSE 0.37 Nm, PLC GRU RMSE 67.25 Nm. The control mode (torque-controlled kd=0 vs position-generated velocity-controlled kd=18) appears to be the dominant predictor of performance. This needs to be quantified before framing the thesis around it.
+
+All prior regime analyses (Test 2, Test 6) were run on the combined test set. This prompt cross-stratifies profile type AND regime simultaneously to answer: are PLC failures uniform across all PLC regimes, or are they concentrated in specific cells (e.g., PLC transitions)?
+
+# Task
+
+Analytical only. No training. Use the v1 GRU checkpoint and combined test set.
+
+1. Load the v1 GRU, run inference on the combined test set, produce per-sample predictions.
+
+2. Tag each test sample with:
+   - profile type ∈ {PLC, PMS, TMS, tStep} — from source filename
+   - regime ∈ {rest, hold, transition, oscillation} — from the Test 2 classifier, unchanged thresholds
+   - control mode ∈ {torque, velocity} — tStep/TMS are torque, PLC/PMS are velocity
+
+3. Produce a cross-tabulation table with profile × regime cells. Each cell contains:
+   - sample count
+   - RMSE
+   - mean |err|
+   - max |err|
+   - count of severe failures (|err| > 100 Nm)
+
+Format:
+
+|         | rest | hold | transition | oscillation | profile total |
+|---------|------|------|------------|-------------|---------------|
+| PLC     | N/RMSE/maxErr/severeN | ... | ... | ... | ... |
+| PMS     | ... | ... | ... | ... | ... |
+| TMS     | ... | ... | ... | ... | ... |
+| tStep   | ... | ... | ... | ... | ... |
+| regime total | ... | ... | ... | ... | OVERALL |
+
+4. Produce the same table for MLP v1 so the GRU-vs-MLP pattern on PLC (MLP wins on PLC, GRU wins everywhere else) can be localized to specific cells.
+
+5. Localize the 234 severe failures exactly: for each severe failure, record (profile, regime). Produce a 4x4 heatmap of severe-failure counts. This answers whether all 234 severe failures are PLC failures or whether they spread across profiles.
+
+6. Control-mode aggregation: aggregate RMSE grouped by control mode only (torque vs velocity), ignoring profile subtype. Report:
+   - Total samples torque vs velocity
+   - Combined RMSE on torque-controlled samples: MLP, GRU
+   - Combined RMSE on velocity-controlled samples: MLP, GRU
+   - Ratio velocity/torque for both models
+
+# Interpretation block
+
+- "PLC is the problem, not position-control generally": if PMS (also velocity-controlled) has RMSE within 2x of TMS/tStep but PLC is 10x worse
+- "Velocity control is the problem": if both PLC and PMS are substantially worse than torque-controlled profiles, and PMS/TMS (same excitation type, different control mode) differ by >3x
+- "Specific failure cell identified": if >80% of severe failures fall in a single (profile, regime) cell, name that cell in the verdict
+- "Failures distributed across profiles": if severe failures spread across ≥2 profile types
+- Flag any cell where GRU and MLP order swaps compared to the overall combined ordering. This identifies where the architecture-invariance breaks down.
+
+# Requirements
+
+- Profile type must be available per sample. If not in the data loader, reconstruct from source filename using the naming convention (file contains "PLC", "PMS", "TMS", "tStep" respectively).
+- All analysis uses existing v1 artefacts. No retraining.
+
+# Deliverables
+
+1. The two 4x4 tables (MLP and GRU) in `diagnostics/outputs/test7_profile_regime_crosstab.md`.
+2. The severe-failure-location heatmap as a figure.
+3. Control-mode aggregation table.
+4. Verdict block appended to SUMMARY.txt.
+
+# Deliverables applicable to all prompts
+
+1. Short summary of the purpose of the prompt and the interpretation/implication of the verdict, appended to `prompts/SUMMARY+CONCLUSION.txt`.
+
+# Out of scope
+
+Retraining, feature changes, architecture changes. This is purely diagnostic stratification of existing results.

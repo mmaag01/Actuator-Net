@@ -1,14 +1,8 @@
-# UPDATED
-
-prompts 2.3a and 2.3b have been omitted: drop the v2 dependency and train on v1 data.
-
 # Context
-
-UPDATED: drop the v2 dependency from them (no prompt 2.3) and have them run on v1 data.
 
 Test 3 found that accelAct's high-frequency power fraction (>250 Hz) is 542× that of velAct, despite coming from EPOS4's "Sensor Fusion Filtered Fused Acceleration" register (0x4C01/6, per EPOS4-Firmware-Specification-En.pdf). The register's built-in filter is evidently insufficient for our sampling rate. Left as-is, accelAct contributes noise rather than signal, and this gets worse if we later increase SEQ_LEN.
 
-Apply a pre-feature-window smoothing pass and measure the effect. Run this AFTER prompt 3b (on v2 data and models). Independently of the ablations in prompt 4.
+Apply a pre-feature-window smoothing pass and measure the effect. Independent of the ablations in prompt 4.
 
 # Task
 
@@ -18,11 +12,13 @@ Apply a pre-feature-window smoothing pass and measure the effect. Run this AFTER
 
 3. The smoothing must be applied BEFORE the train/val/test split (otherwise val/test samples get smoothed using training context, which is fine — SG uses a symmetric window — but should be explicit). Actually, more precisely: smoothing uses only current-file samples, which is safe for chronological splits because the SG window near split boundaries uses edge handling (mode='interp' or 'nearest'). Document this in a comment.
 
-4. Retrain MLP and GRU on the smoothed data. Same hyperparameters as v2. Save as v3.
+4. Retrain MLP and GRU on the smoothed data. Same hyperparameters as v1. Save as v2.
 
 5. Run Test 2 and the ablations summary style comparison:
 
-   | Model | v2 (raw accel) RMSE | v3 (smoothed accel) RMSE | Δ | v2 hold RMSE | v3 hold RMSE | v2 osc RMSE | v3 osc RMSE |
+   | Model | v1 (raw accel) RMSE | v2 (smoothed accel) RMSE | Δ | v1 hold RMSE | v2 hold RMSE | v1 osc RMSE | v2 osc RMSE |
+   | MLP | 13.53 | ... | ... | 64.99 | ... | 12.92 | ... |
+   | GRU | 13.66 | ... | ... | 65.97 | ... | 12.99 | ... |
 
 6. Additionally, re-run Test 3 on the smoothed training file and confirm the HF power ratio has dropped below the 2.0× threshold.
 
@@ -36,14 +32,18 @@ Apply a pre-feature-window smoothing pass and measure the effect. Run this AFTER
 
 - The config flag SMOOTH_ACCEL must default to True after this change if smoothing helps or is neutral. If it hurts, default to False and flag this clearly.
 - Keep the v2 training path intact — do not overwrite.
-- All outputs in `evaluate_v3/`.
+- All outputs in `evaluate_v2/`.
 
 # Deliverables
 
 1. Updated `dataset.py` with smoothing guard.
 2. New checkpoints, scaler, evaluation outputs, Test 2 and Test 3 re-runs.
-3. Side-by-side comparison report `v2_vs_v3_comparison.md`.
+3. Side-by-side comparison report `v1_vs_v2_comparison.md`.
 4. A one-paragraph thesis-ready description of the finding, suitable for the methods or results section. Should mention the hardware register source (0x4C01/6), the measured HF power contamination (542× from Test 3), and the SG parameters used.
+
+# Deliverables applicable to all prompts
+
+1. Short summary of the purpose of the prompt and the interpretation/implication of the verdict, appended to `prompts/SUMMARY+CONCLUSION.txt`.
 
 # Out of scope
 

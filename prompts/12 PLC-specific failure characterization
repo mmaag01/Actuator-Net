@@ -1,0 +1,62 @@
+# Context
+
+Prompt 11 will localize where the severe failures live. If the expected result holds (severe failures concentrated in PLC), this prompt characterizes the failure mode within PLC to determine whether all PLC failures share one mechanism or whether there are multiple distinct failure modes within PLC. idx=38180 (the canonical failure analyzed in Test 5b) is one member of this population; this prompt asks whether it's representative or an outlier.
+
+Assumes Prompt 11 has run and confirms >80% of severe failures are in PLC. If Prompt 11 verdicts otherwise, this prompt's scope widens to cover whichever profile dominates.
+
+# Task
+
+Analytical. No training.
+
+1. From Prompt 11's output, extract the subset of severe failures (|err| > 100 Nm) that fall in the PLC profile. Should be approximately the full 234 given the hypothesis.
+
+2. For each PLC severe failure, dump the 30-sample input window and the adjacent 30 samples before and after (90 samples total around the failure) for all 10 v1 features plus torAct. Store as one CSV per failure in `diagnostics/outputs/plc_failures/{idx}.csv`.
+
+3. Cluster the failures. For each failure extract a feature vector summarizing the window:
+   - mean, std, min, max of torDes over the window
+   - mean, std, min, max of torAct over the window
+   - mean, std, min, max of torEst over the window
+   - mean, std, min, max of velAct over the window
+   - mean, std of i over the window
+   - time since last nonzero torDes (samples)
+   - time since last torAct below 20 Nm (samples, within-file)
+   - sign of torAct at failure sample
+   - sign of torEst at failure sample
+   - sign of i at failure sample
+
+4. Run k-means on these feature vectors with k ∈ {2, 3, 4, 5}. Use silhouette score to pick the right k. Report the cluster sizes, centroids, and the typical within-file file-of-origin for each cluster.
+
+5. For each cluster:
+   - plot a representative failure window (the one closest to the centroid) showing all 10 features
+   - describe the failure mode in plain text based on the feature-signature (e.g., "torDes recently was +140 Nm, now 0; torEst swinging; velAct zero; i negative" → backlash ringing)
+
+6. Cross-reference with file of origin: which PLC log files produce which clusters? Are certain files specialists in certain failure modes?
+
+7. Check for a "loading-phase present in window" diagnostic: for each PLC severe failure, compute the fraction of the 30-sample baseline window where |torDes| > 10 Nm. If this is near zero for all failures (loading happened well before the window), confirm that the baseline SEQ_LEN=30 couldn't see the cause regardless. If some failures DO have loading in the window, those are the failures where Prompt 8's longer windows should have helped — check whether they did.
+
+# Interpretation block
+
+- "Single failure mechanism": if k=1 or the best silhouette k has >90% of samples in one cluster
+- "Two distinct mechanisms": if k=2 wins and both clusters have >15% of samples
+- "Many failure modes": if silhouette prefers k≥3. In this case the "backlash ringing" hypothesis from Test 5b applies to only a subset of failures.
+- "idx=38180 representative" if it falls in the cluster covering >60% of failures; "idx=38180 outlier" otherwise.
+
+# Requirements
+
+- Save per-cluster representative windows and feature vectors so this characterization is reusable in the thesis.
+- Use standard scaler on features before k-means.
+- Report silhouette scores for all tested k values so the choice is transparent.
+
+# Deliverables
+
+1. `diagnostics/outputs/plc_failure_characterization.md` with cluster table, silhouette plot, cluster-centroid feature table, per-cluster representative-window plots.
+2. `plc_failures/` directory of per-failure window CSVs.
+3. Verdict block.
+
+# Deliverables applicable to all prompts
+
+1. Short summary of the purpose of the prompt and the interpretation/implication of the verdict, appended to `prompts/SUMMARY+CONCLUSION.txt`.
+
+# Out of scope
+
+Retraining, fixing the failures. This prompt only characterizes them so later prompts can address them in targeted ways.

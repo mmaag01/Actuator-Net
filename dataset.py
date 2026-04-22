@@ -16,15 +16,51 @@ def _get_feature_cols():
 
 
 def _load_dataframes():
-    loader = ImportData(path=str(config.DATA_PATH))
-    dfs = []
+    dfs, main_types, crashes_types, other_types = [], [], [], []
+    if config.USE_PLC: 
+        main_types.append('PLC')
+    if config.USE_PMS: 
+        main_types.append('PMS')
+        other_types.append('PMS')
+    if config.USE_TMS: 
+        main_types.append('TMS')
+        crashes_types.append('TMS')
+        other_types.append('TMS')
+    if config.USE_tStep:
+        main_types.append('tStep')
+        crashes_types.append('tStep')
+        other_types.append('tStep')
+    if config.USE_tStep_CmdErrs: 
+        other_types.append('tStep CmdErrs')
+    if config.USE_Misc: 
+        other_types.append('Misc')
+
+    loader = ImportData(zero_offset=config.ZERO_OFFSET,
+                        units=config.UNITS,
+                        path=str(config.DATA_PATH))
     if config.USE_MAIN:
-        dfs.extend(loader.importMain(config.MAIN_TYPES))
+        dfs.extend(loader.importMain(main_types))
     if config.USE_CRASHES:
-        dfs.extend(loader.importFails(config.CRASHES_TYPES))
+        dfs.extend(loader.importFails(crashes_types))
     if config.USE_OTHER:
-        dfs.extend(loader.importOther(config.OTHER_TYPES))
+        dfs.extend(loader.importOther(other_types))
     assert dfs, "No data loaded — check USE_MAIN/USE_CRASHES/USE_OTHER in config.py"
+
+    if config.SMOOTH_ACCEL and 'accelAct' in config.FEATURE_COLS:
+        from scipy.signal import savgol_filter  # noqa: PLC0415
+        # Applied per-file (never across file boundaries — each file is an
+        # independent recording session). mode='interp' fills edge artefacts
+        # via polynomial extrapolation using only same-file samples, so the
+        # SG window near the train/val/test split boundaries does not leak
+        # future labels — it only interpolates the continuous physical signal.
+        for df in dfs:
+            df.loc[:, 'accelAct'] = savgol_filter(
+                df['accelAct'].values,
+                window_length=config.SG_WINDOW,
+                polyorder=config.SG_POLYORDER,
+                mode='interp',
+            )
+
     return dfs
 
 
