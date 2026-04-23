@@ -10,8 +10,16 @@ from data_utils import ImportData
 
 def _get_feature_cols():
     cols = list(config.FEATURE_COLS)
-    if config.INCLUDE_I2T:
-        cols.append('i2t')
+    if not config.INCLUDE_I2T:
+        cols.remove('i2t')
+    if not config.INCLUDE_kd:
+        cols.remove('kd')
+    if not config.INCLUDE_accelAct:
+        cols.remove('accelAct')
+    if not config.INCLUDE_posDes:
+        cols.remove('posDes')
+    if not config.INCLUDE_torKdEst:
+        cols.remove('torKdEst')
     return cols
 
 
@@ -145,7 +153,7 @@ def build_datasets(save_scalers: bool = True,
         test_y_parts.append(test_df[target_col].values.astype(np.float32))
 
     # Fit scalers on training data only (unless pre-fitted scalers provided)
-    fit_new = scaler_X is None
+    fit_new = config.FIT_NEW_SCALERS
     if fit_new:
         X_train_all = np.concatenate(train_X_parts, axis=0)
         y_train_all = np.concatenate(train_y_parts, axis=0)

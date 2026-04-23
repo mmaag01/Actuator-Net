@@ -133,10 +133,11 @@ def main():
     print(f"\nTrain Samples: {len(train_loader)}")
     print(f"\nTest Samples: {len(test_loader)}")
     print(f"\nValidation Samples: {len(val_loader)}")
-
+    print(f"\nWindow Size: {config.SEQ_LEN}")
     n_features = config.N_FEATURES
     model = build_model(args.model, n_features).to(device)
-    print(f"\nModel  : {args.model.upper()} | Parameters: {count_parameters(model):,}")
+    print(f"\nModel: {args.model.upper()} | Parameters: {count_parameters(model):,}")
+    print(f"\nFeaures: {config.N_FEATURES} | Hidden Layers: {config.MLP_N_LAYERS} | Hidden Layer Size: {config.MLP_HIDDEN_SIZE}")
 
     criterion = nn.MSELoss()
     optimizer = torch.optim.Adam(

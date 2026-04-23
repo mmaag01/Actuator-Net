@@ -132,3 +132,927 @@ Recommended SEQ_LEN targets for Prompt 8 sweep: p50=267 samples, p75=325 samples
 
 Verdict: Lookback feasible
   Only 0.0% of failures are file-start-loaded. SEQ_LEN targets: p50=267, p75=325, p95=372 samples.
+
+========================================================================
+[Prompt 6 — Linear Regression Baseline]
+========================================================================
+
+Model | i2t: False | SEQ_LEN: 30    Overall RMSE     Hold      Osc    Trans     Rest
+MLP v1                                    13.530    64.99    12.92    11.41     4.01        
+GRU v1                                    13.660    65.97    12.99    11.66     3.80
+                                               A: i2t: False | SEQ_LEN: 30                          B: i2t: True | SEQ_LEN: 5                          C: i2t: False | SEQ_LEN: 5
+                                    Overall RMSE     Hold      Osc    Trans     Rest    Overall RMSE     Hold      Osc    Trans     Rest    Overall RMSE     Hold      Osc    Trans     Rest
+LR-physics (scaled)                       20.627    66.43    26.33    14.74     3.74          20.475    66.57    26.14    14.54     3.70          20.475    66.57    26.14    14.54     3.70
+LR-minimal (scaled)                       20.379    65.35    26.12    14.29     3.57          20.231    65.48    25.93    14.10     3.53          20.231    65.48    25.93    14.10     3.53
+LR-full (scaled)                          19.142    64.48    24.33    12.10     3.97          18.997    64.61    24.15    11.92     3.95          18.992    64.60    24.15    11.92     3.93
+LR-windowed (scaled)                      13.479    65.34    12.64    11.46     4.19          13.352    65.52    12.54    11.30     4.22          13.339    65.50    12.53    11.28     4.19
+
+A: NN/LR = 100.38% | posAct(57.49), posErr(57.01), torEst(36.49), torDes(17.07), velAct(15.98)
+B: NN/LR = 101.33% | torEst(33.41), torDes(18.05), i(9.83), velAct(8.62), velErr(7.41)
+C: NN/LR = 101.43% torEst(33.41), torDes(18.05), i(9.83), velAct(8.62), velErr(7.41)
+
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+Regime classifier: rolling_std window=200 samples, osc>20.0 / rest<5.0 / hold>|10.0| Nm.
+
+Per-profile GRU RMSE [Nm]:
+  PLC   : 27.961
+  PMS   : 8.171
+  TMS   : 5.286
+  tStep : 0.371
+
+Control-mode: torque=3.326 Nm  velocity=19.794 Nm
+  ratio vel/torque = 5.95×
+
+Severe failures (|err|>100): GRU=234
+
+Verdict: Profile × regime analysis: PLC=27.96 PMS=8.17 TMS=5.29 tStep=0.37 Nm. vel/torque ratio = 6.0×.
+
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+Regime classifier: rolling_std window=200 samples, osc>20.0 / rest<5.0 / hold>|10.0| Nm.
+
+Per-profile GRU RMSE [Nm]:
+  PLC   : 27.961
+  PMS   : 8.171
+  TMS   : 5.286
+  tStep : 0.371
+
+Control-mode: torque=3.326 Nm  velocity=19.794 Nm
+  ratio vel/torque = 5.95×
+
+Severe failures (|err|>100): GRU=234
+
+Verdict: PLC is the problem, not velocity-control generally: PMS RMSE=8.17 Nm is 1.5× TMS (5.29 Nm, within the 2× threshold), but PLC RMSE=27.96 Nm is 5.3× worse — the PLC profile is the outlier, not velocity-controlled excitation in general. Dominant failure cell: (PLC, hold) accounts for 76% of GRU severe failures (n=179/234).
+
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+Failures analyzed: 234
+Best k=5  silhouette=0.6552
+Clusters: C0=60 (26%)  C1=131 (56%)  C2=14 (6%)  C3=15 (6%)  C4=14 (6%)
+
+Verdict: Many failure modes (best k=5, silhouette=0.655): C0=60 (26%), C1=131 (56%), C2=14 (6%), C3=15 (6%), C4=14 (6%). The backlash-ringing hypothesis from Test 5b applies to only a subset of failures — multiple distinct mechanisms present. idx=38180 not found in this evaluation split. Loading diagnostic: 100% of failures have zero |torDes| in the input window — the loading event precedes the SEQ_LEN=30 window, confirming that longer windows or state-carrier features are required.
+
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+[Test 8 — PLC failure characterization]
+=
+Failures analyzed: 234
+Best k=5  silhouette=0.6552
+Clusters: C0=60 (26%)  C1=131 (56%)  C2=14 (6%)  C3=15 (6%)  C4=14 (6%)
+
+Verdict: Many failure modes (best k=5, silhouette=0.655): C0=60 (26%), C1=131 (56%), C2=14 (6%), C3=15 (6%), C4=14 (6%). The backlash-ringing hypothesis from Test 5b applies to only a subset of failures — multiple distinct mechanisms present. idx=38180 not found in this evaluation split. Loading diagnostic: 100% of failures have zero |torDes| in the input window — the loading event precedes the SEQ_LEN=30 window, confirming that longer windows or state-carrier features are required.

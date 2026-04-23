@@ -1,0 +1,44 @@
+# Context
+
+Prompt 6 established that ridge regression on a 300-dim flattened window achieves RMSE 13.48 Nm, matching MLP (13.53) and GRU (13.66) within 1%. This was on the combined test set. We do not know whether linear-vs-NN parity holds within each profile type.
+
+If linear matches GRU on every profile, the architecture-invariance conclusion extends fully — all model classes converge on the same conditional-mean function.
+If linear is much worse than GRU on tStep (e.g., 5 Nm linear vs 0.37 Nm GRU) but matches on PLC, then the GRU genuinely does nonlinear modeling on the easy regimes and the PLC failure is not a model-class issue.
+
+# Task
+
+Analytical only, no retraining. Use the existing LR-windowed model from Prompt 6 (SEQ_LEN=30, 300-dim ridge).
+
+1. Evaluate LR-windowed on the test split, stratified by profile (PLC, PMS, TMS, tStep). Use the same filename-based profile classifier as Prompt 11.
+
+2. Produce a comparison table:
+
+| Profile | Control | LR-windowed RMSE | MLP v1 RMSE | GRU v1 RMSE | LR/GRU ratio |
+|---|---|---|---|---|---|
+| tStep | torque | ... | 1.73 | 0.37 | ... |
+| TMS | torque | ... | 4.73 | 4.56 | ... |
+| PMS | velocity | ... | 8.18 | 8.08 | ... |
+| PLC | velocity | ... | 51.31 | 67.25 | ... |
+
+3. Per-profile feature importance: re-fit LR-windowed on each profile's training data separately (4 fits, fast). Report the top 5 features (by summed |coef| over 30 timesteps) for each. Compare against the combined-data feature importance from Prompt 6.
+
+# Interpretation
+
+- "Architecture-invariance is total": LR/GRU ratio within 30% on all profiles AND LR PLC RMSE > 50 Nm. NN provides no lift anywhere; PLC failure is data-side.
+- "NN provides lift on easy profiles only": LR/GRU > 3x on tStep but within 30% on PLC. NN does nonlinear modeling on torque-controlled but cannot help on velocity-controlled.
+- "NN provides lift on PLC": LR PLC RMSE > 100 Nm while GRU PLC RMSE = 67 Nm. Means the GRU is actually doing something useful on PLC that linear cannot. (Unlikely given the aggregate parity, but worth checking.)
+- "Profiles use different feature subsets": if per-profile feature importance differs substantially across profiles. Means a single-feature-set model is inherently compromised.
+
+# Deliverables
+
+1. The comparison table.
+2. The 4 per-profile feature-importance lists.
+3. Verdict block.
+
+# Deliverables applicable to all prompts
+
+1. Short summary of the purpose of the prompt and the interpretation/implication of the verdict, appended to `prompts/SUMMARY+CONCLUSION.md`.
+
+# Out of scope
+
+Retraining NNs. Adding new features. Anything that takes more than an hour.

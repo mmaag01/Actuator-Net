@@ -68,7 +68,7 @@ Output: `test4_model_agreement.csv`, `test4_pred_scatter.png`, `test4_pred_diffe
 - All scripts use the same matplotlib style and a consistent figure size (e.g., 10×6) for thesis-readiness.
 - Each script ends with a printed summary block (5–10 lines) interpreting its own results in plain English — what passed, what failed, what the next action is. The interpretation logic should be hard-coded thresholds (e.g., "corr > 0.99 → likely passthrough") so the script tells me the answer rather than making me eyeball plots.
 - Add a `diagnostics/README.md` that lists the four tests, the hypothesis each one tests, and the order to run them.
-- Add a `diagnostics/run_all.py` that runs all four scripts in sequence and concatenates the printed summaries into `diagnostics/outputs/SUMMARY.txt`.
+- Add a `diagnostics/run_all.py` that runs all four scripts in sequence and concatenates the printed summaries into `diagnostics/outputs/SUMMARY.md`.
 
 # Deliverables
 

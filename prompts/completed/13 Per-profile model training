@@ -1,0 +1,86 @@
+# Context
+
+Headline result from Hwangbo et al. and Zhu et al.: neural actuator models achieve sub-1 Nm RMSE on both torque-controlled AND position-controlled actuators of comparable scale. Our v1 GRU achieves 0.37 Nm on tStep but 67.25 Nm on PLC — two orders of magnitude gap within the same model. This is not replicated in the literature. The gap must trace to one of: (1) mixed-profile training dilutes each profile's fit, (2) feature set differences (we include torEst/accelAct which Hwangbo omitted), (3) excitation range differences, (4) control topology differences, or (5) window/rate mismatches.
+
+This prompt isolates cause (1) specifically: does training one model per profile type recover literature-level RMSE on each?
+
+# Task
+
+Retrain MLP and GRU from scratch, 4 times each, on only the training data of one profile type:
+
+- model_PLC: trained on PLC training data only
+- model_PMS: trained on PMS training data only
+- model_TMS: trained on TMS training data only
+- model_tStep: trained on tStep training data only
+
+Same hyperparameters as v1. Same seeds. Same SEQ_LEN=30. Same feature set. Checkpoints in `checkpoints/per_profile/{profile}_{arch}.pt`.
+
+For each of the 8 models, evaluate on:
+- its own profile's held-out test samples (primary metric)
+- every other profile's held-out test samples (to quantify generalization loss)
+
+Report:
+
+### Primary: matched training/test
+
+| Profile | v1 MLP (mixed) | per-profile MLP | v1 GRU (mixed) | per-profile GRU |
+|---|---|---|---|---|
+| tStep | 1.73 | ... | 0.37 | ... |
+| TMS | 4.73 | ... | 4.56 | ... |
+| PMS | 8.18 | ... | 8.08 | ... |
+| PLC | 51.31 | ... | 67.25 | ... |
+
+### Cross-profile generalization (GRU only; 4x4 matrix)
+
+Rows = trained profile, columns = test profile. Cell = RMSE.
+
+|  | tStep | TMS | PMS | PLC |
+|---|---|---|---|---|
+| trained tStep | ... | ... | ... | ... |
+| trained TMS | ... | ... | ... | ... |
+| trained PMS | ... | ... | ... | ... |
+| trained PLC | ... | ... | ... | ... |
+
+Diagonal = own-profile RMSE (primary metric above). Off-diagonal = cross-profile transfer.
+
+### Training dynamics per profile
+
+| Profile | Train samples | GRU best epoch | GRU best val loss | GRU val/train ratio |
+|---|---|---|---|---|
+| tStep | ... | ... | ... | ... |
+| TMS | ... | ... | ... | ... |
+| PMS | ... | ... | ... | ... |
+| PLC | ... | ... | ... | ... |
+
+# Interpretation block
+
+- "Per-profile training closes the gap": if per-profile PLC GRU achieves RMSE < 5 Nm. Means cause (1) (dilution from mixed training) is dominant. Thesis implication: literature-replication requires per-profile models, and the v1 "universal model" framing was the problem.
+- "Per-profile partially closes the gap": if per-profile PLC GRU achieves 5-30 Nm. Dilution is real but not the full story; causes (2)-(5) contribute.
+- "Per-profile does not close the gap": if per-profile PLC GRU RMSE stays > 30 Nm. Means the PLC data itself is harder to fit than the literature benchmarks suggest, regardless of training-set composition. Pivot to causes (2)-(5).
+
+Cross-profile matrix diagnostic: examine whether diagonal < off-diagonal universally. If the PLC-trained model has low PLC RMSE but catastrophic RMSE on tStep test data, it means PLC and tStep live in genuinely different feature distributions that cannot be jointly modeled without sacrificing one. This is a structural finding.
+
+Training dynamics diagnostic: examine whether PLC specifically shows high val/train ratio or plateaued val loss. If PLC val/train ratio >> other profiles', PLC training is unstable (overfits or underfits differently) and may need profile-specific hyperparameters.
+
+# Requirements
+
+- Each per-profile model gets the same train/val/test split structure (70/15/15 chronological per file) but applied only within that profile's files.
+- Re-fit scaler per profile — the scaling statistics are profile-dependent.
+- Log training curves for all 8 runs. Identical plotting style to prior sweeps so comparisons are direct.
+- v1 baseline numbers in the primary table must come from evaluating v1 on the per-profile test subsets. If v1 was evaluated on combined test set only, run this evaluation now using the v1 checkpoint — no retraining needed for baseline.
+
+# Deliverables
+
+1. `experiments/outputs/per_profile_training.md` with all three tables, interpretation, and training-dynamics summary.
+2. Training curves: all 8 runs on one plot, faceted by architecture, coloured by profile.
+3. Cross-profile generalization heatmap (the 4x4 matrix as a figure).
+4. For PLC specifically: a before/after time-series plot over samples 38150-38250 comparing v1 GRU prediction vs per-profile PLC GRU prediction vs truth. This is the direct visual test of whether the dilution hypothesis explains idx=38180.
+
+# Deliverables applicable to all prompts
+
+1. Short summary of the purpose of the prompt and the interpretation/implication of the verdict, appended to `prompts/SUMMARY+CONCLUSION.txt`.
+
+# Out of scope
+
+- Changing feature set, architecture, SEQ_LEN, or hyperparameters. This experiment isolates the training-set composition variable by holding everything else constant.
+- Investigating causes (2)-(5) directly. Those come after this prompt's verdict, if they're needed.

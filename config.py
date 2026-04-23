@@ -23,13 +23,18 @@ UNITS={'t':'s', 'tor':'Nm', 'vel':'rad/s',
 
 # ── Features ─────────────────────────────────────────────────────────────────
 FEATURE_COLS = [
-    'torDes', 'posDes', 'velDes',
-    'posAct', 'velAct', 'accelAct',
-    'i', 'torEst', 'posErr', 'velErr',
+    't', 'torDes', 'posDes', 'velDes', 'posAct', 'posErr', 'velAct', 
+    'velErr', 'accelAct', 'i', 'torEst', 'torKdEst', 'kd', 'i2t',
 ]
-INCLUDE_I2T = False   # set True to add i2t as an additional input feature
 TARGET_COL  = 'torAct'
-N_FEATURES  = len(FEATURE_COLS) + int(INCLUDE_I2T)
+INCLUDE_I2T = True   # set True to add i2t as an additional input feature
+INCLUDE_torKdEst = True
+INCLUDE_kd = True
+INCLUDE_posDes = True
+INCLUDE_accelAct = True
+INCLUDE_t = True
+
+N_FEATURES  = len(FEATURE_COLS) - int(not INCLUDE_I2T) - int(not INCLUDE_torKdEst) - int(not INCLUDE_kd) - int(not INCLUDE_posDes) - int(not INCLUDE_accelAct)
 
 # ── Sequence ──────────────────────────────────────────────────────────────────
 SEQ_LEN = 30          # window / history length (timesteps)
@@ -51,8 +56,10 @@ MAX_EPOCHS       = 200
 PATIENCE         = 20     # early-stopping patience (epochs)
 GRAD_CLIP_NORM   = 1.0
 WEIGHT_DECAY     = 0.0
+RESIDUAL_TARGET  = False  # predict torAct-torEst; reconstruct at inference with +torEst
 
 # ── Data split ────────────────────────────────────────────────────────────────
+FIT_NEW_SCALERS = True
 TRAIN_RATIO = 0.70
 VAL_RATIO   = 0.15
 # TEST_RATIO  = 1 - TRAIN_RATIO - VAL_RATIO = 0.15  (implied)

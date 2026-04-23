@@ -1,0 +1,44 @@
+# Context
+
+Prompt 6 reports NN/LR ratios of 100.4-101.4% — too close to call by inspection. Before claiming "NNs match LR" or "NNs underperform LR" in the thesis, we need a proper statistical test.
+
+# Task
+
+Analytical, on existing predictions.
+
+1. For each test sample, compute the squared error from each of: MLP v1, GRU v1, LR-windowed (SEQ_LEN=30), LR-windowed (SEQ_LEN=5).
+
+2. Pairwise comparisons (Diebold-Mariano test for equal predictive accuracy, with squared-error loss):
+   - GRU vs MLP
+   - GRU vs LR-windowed-30
+   - MLP vs LR-windowed-30
+   - LR-windowed-30 vs LR-windowed-5
+
+3. Report per pair:
+   - mean squared error of each model
+   - DM test statistic and p-value
+   - 95% bootstrap confidence interval on the RMSE difference (10000 resamples)
+   - effect size: Cohen's d on the per-sample squared errors
+
+4. Repeat the pairwise comparisons stratified by profile (4 profiles × 4 pairs = 16 tests). Use Bonferroni correction.
+
+# Interpretation
+
+- "GRU and MLP are statistically indistinguishable" if DM p > 0.05 with effect size |d| < 0.1
+- "LR matches NN" if DM(GRU, LR) p > 0.05 with effect size |d| < 0.1
+- "NN provides significant lift on profile X" if the per-profile DM test has p < 0.05/16 (Bonferroni) AND |d| > 0.2
+
+# Deliverables
+
+1. Pairwise comparison table (overall).
+2. Per-profile pairwise comparison table.
+3. Bootstrap RMSE-difference distribution plot for the GRU vs LR comparison (this is the headline figure — if the distribution clearly straddles zero, NN parity is confirmed).
+4. Verdict block.
+
+# Deliverables applicable to all prompts
+
+1. Short summary of the purpose of the prompt and the interpretation/implication of the verdict, appended to `prompts/SUMMARY+CONCLUSION.md`.
+
+# Out of scope
+
+Retraining. Adding models. Anything beyond statistical analysis of existing predictions.
