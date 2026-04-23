@@ -69,3 +69,16 @@ i drop has minor osc impact (GRU: -0% on osc RMSE).
 **Proprioception alone sufficient** (GRU: Config D within 1.2% of Config A overall). This is a surprising result: the 8-feature purely proprioceptive config matches the full model — the NN may have learned a pose-based torque estimator that does not rely on the command or current signals.
 
 Thesis recommendation: Neither torDes nor i alone is strongly load-bearing: the model appears to distribute its reliance across many features, suggesting the 8-feature proprioceptive subset is nearly equivalent. The thesis should note the robustness of the model to individual feature removal and investigate whether further ablation (e.g., torEst) reveals a single dominant signal.
+
+========================================================================
+[Prompt 5 — Acceleration Smoothing]
+========================================================================
+Purpose: Reduce accelAct HF noise (>250 Hz power fraction 542× velAct,
+measured in Test 3 from register 0x4C01/6) via Savitzky-Golay smoothing
+(window=21, polyorder=3) applied per-file before windowing.
+
+HF ratio: 45.7× → 0.2× after smoothing (PASS, threshold=2.0×).
+Overall RMSE: MLP 13.53→13.55 Nm, GRU 13.66→13.41 Nm.
+
+Verdict: Smoothing NEUTRAL (overall RMSE change <5% in either direction)
+SMOOTH_ACCEL defaults to True (smoothing retained).
