@@ -22,22 +22,26 @@ UNITS={'time':'s', 'torque':'Nm', 'velocity':'rad/s',
                'position':'rad', 'current':'A'}
 
 # ── Features ─────────────────────────────────────────────────────────────────
+# V1: torDes, posDes, velDes, posErr, velErr, posAct, velAct, accelAct, i, torEst
+# V3: torDes, posDes, velDes, posErr, velErr, posAct, velAct, accelAct
 FEATURE_COLS = [
     'torDes', 'posDes', 'velDes', 'posAct', 'posErr', 'velErr',
     'velAct',  'accelAct', 'i', 'torEst',
     'torKdEst', 'kd', 'i2t', 't',
 ]
 TARGET_COL  = 'torAct'
-INCLUDE_I2T      = False   # i2t (thermal accumulation proxy)
-INCLUDE_torKdEst = False   # Kd contribution to torEst decomposition
-INCLUDE_torEst   = False
-INCLUDE_kd       = False   # derivative gain value
+INCLUDE_I2T      = True   # i2t (thermal accumulation proxy)
+INCLUDE_curr     = True
+INCLUDE_torKdEst = True   # Kd contribution to torEst decomposition
+INCLUDE_torEst   = True
+INCLUDE_kd       = True   # derivative gain value
 INCLUDE_posDes   = True   # desired position (always on in v1)
 INCLUDE_accelAct = True   # actual acceleration (always on in v1)
-INCLUDE_t        = False   # timestamp — adds absolute-time signal
+INCLUDE_t        = True   # timestamp — adds absolute-time signal
 
 N_FEATURES  = (len(FEATURE_COLS)
                - int(not INCLUDE_I2T)
+               - int(not INCLUDE_curr)
                - int(not INCLUDE_torKdEst)
                - int(not INCLUDE_torEst)
                - int(not INCLUDE_kd)

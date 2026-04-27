@@ -13,16 +13,6 @@ NN/best-LR ratio: 93.9% — NNs barely beat linear (NN/LR = 93.85%) — thesis-r
 Implication: The NNs barely outperform a linear model; thesis framing must be reframed — the task is near-linear.
 
 ========================================================================
-[Prompt 11 — Profile × Regime cross-tabulation]
-========================================================================
-Purpose: Cross-stratify profile type and regime to localize v1 failures.
-Is PLC the problem, or position-control generally?
-
-v1 GRU per-profile RMSE: PLC=28.24  PMS=8.93  TMS=6.16  tStep=0.56 Nm
-Control mode: torque=3.88 Nm  velocity=20.95 Nm  (ratio 5.4×)
-Verdict: PLC is the problem, not velocity-control generally: PMS RMSE=8.93 Nm is 1.5× TMS (6.16 Nm, within the 2× threshold), but PLC RMSE=28.24 Nm is 4.6× worse — the PLC profile is the outlier, not velocity-controlled excitation in general. Dominant failure cell: (PLC, hold) accounts for 76% of GRU severe failures (n=179/234).
-
-========================================================================
 [Prompt 6 — Linear Regression Baseline]
 ========================================================================
 Purpose: Establish the simplest-reasonable linear predictor to quantify
@@ -477,4 +467,243 @@ Importance range: 56.2766 to 0.2246 Nm.
 Shuffles each feature across test set, measures RMSE increase (Nm).
 Top 3 drivers: i, velErr, velAct.
 Importance range: 48.0975 to 0.0028 Nm.
+
+
+========================================================================
+[Prompt 11 — Profile × Regime cross-tabulation]
+========================================================================
+Purpose: Cross-stratify profile type and regime to localize v1 failures.
+Is PLC the problem, or position-control generally?
+
+v1 GRU per-profile RMSE: PLC=80.91  PMS=51.58  TMS=28.26  tStep=3.92 Nm
+Control mode: torque=17.97 Nm  velocity=67.85 Nm  (ratio 3.8×)
+Verdict: Failures distributed across 3 profiles (PLC, PMS, TMS). PLC=80.91 PMS=51.58 TMS=28.26 tStep=3.92 Nm. vel/torque ratio = 3.8×.
+
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+[Prompt 16 — 8-Feature Evaluation]
+=
+
+Purpose: Replicate the collapse from 10-feature (13.53/13.66 Nm) to
+8-feature (no torEst, no i) across 3 seeds, and characterise whether
+kinematic-only features are sufficient to model actuator torque.
+
+MLP: 33.29 ± 0.79 Nm  (v1 13.53 Nm, Δ=+19.76 Nm)
+GRU: 45.75 ± 0.34 Nm  (v1 13.66 Nm, Δ=+32.09 Nm)
+predict-torDes baseline: 51.03 Nm
+8-ft MLP / torDes ratio: 0.64x
+
+Verdict: Result is ROBUST (MLP std=0.79, GRU std=0.34 Nm < 2 Nm). Kinematic features provide WEAK lift over predict-torDes (8-ft MLP=32.83 Nm, torDes baseline=51.03 Nm, ratio=0.64 — threshold 3×).
 

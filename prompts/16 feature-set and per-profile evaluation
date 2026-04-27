@@ -1,0 +1,57 @@
+# Context
+
+Removing torEst and i from the feature set collapses MLP RMSE from 13.53 to 32.59 and GRU RMSE from 13.66 to 46.97 on the combined test set. This 8-feature configuration {torDes, posDes, velDes, posAct, posErr, velErr, velAct, accelAct} is the closest match to Hwangbo's "no direct torque telemetry" feature set and is the honest test of "can a NN learn actuator dynamics from kinematics alone."
+
+Before drawing thesis-grade conclusions from a single training run, replicate the result, evaluate per-profile, and verify training was healthy.
+
+# Task
+
+1. Re-run the 8-feature training three times with different random seeds (existing v1 seed plus two new ones). Same hyperparameters as v1. Report mean ± std of RMSE/MAE across the three runs for both MLP and GRU. This quantifies the noise floor on the 32.59/46.97 numbers.
+
+2. For the median-performing run of each architecture, evaluate per-profile (PLC, PMS, TMS, tStep) using the canonical baseline test split protocol (whichever was confirmed correct in Prompt 13's reconciliation).
+
+3. Compare to v1 per-profile numbers in a single table:
+
+| Profile | v1 MLP (10 ft) | 8-ft MLP | Δ | v1 GRU (10 ft) | 8-ft GRU | Δ |
+|---|---|---|---|---|---|---|
+| tStep | 1.73 | ... | ... | 0.37 | ... | ... |
+| TMS | 4.73 | ... | ... | 4.56 | ... | ... |
+| PMS | 8.18 | ... | ... | 8.08 | ... | ... |
+| PLC | 51.31 | ... | ... | 67.25 | ... | ... |
+
+4. Run the same regime decomposition (Test 2 classifier) on the 8-feature predictions:
+
+| Regime | v1 GRU RMSE | 8-ft GRU RMSE |
+|---|---|---|
+| rest | 3.80 | ... |
+| hold | 65.97 | ... |
+| transition | 11.66 | ... |
+| oscillation | 12.99 | ... |
+
+5. Compute training health: best epoch, val/train ratio, val MSE at best epoch. Compare to v1's training health to identify whether 8-feature training is well-converged or pathological.
+
+6. Compute Test 1 equivalent for the 8-feature setup: what's the RMSE of "predict zero" and "predict torDes" baselines on the same test split? If 8-feature MLP at 32 Nm beats predict-torDes by less than 3x, the kinematic features are providing weak lift over the trivial baseline.
+
+# Interpretation
+
+- "Result is robust": std across seeds < 2 Nm. The 32/47 numbers are real.
+- "Result is unstable": std across seeds > 5 Nm. Need more seeds and possibly hyperparameter retuning.
+- "Per-profile pattern preserved": if tStep/TMS RMSE rises proportionally on each profile and PLC stays similar, the leakage features were helping uniformly. If tStep RMSE rises 100x while PLC RMSE stays the same, the leakage features were specifically responsible for the easy-profile performance.
+- "Kinematic features insufficient": if 8-ft MLP RMSE is within 3x of predict-torDes, the kinematic feature set genuinely cannot model HEJ-90 torque well.
+
+# Deliverables
+
+1. Three-seed mean±std table.
+2. v1-vs-8-ft per-profile table.
+3. v1-vs-8-ft per-regime table.
+4. Predict-torDes / predict-zero baselines on 8-ft test split.
+5. Verdict block.
+
+# Deliverables applicable to all prompts
+
+1. Short summary of the purpose of the prompt and the interpretation/implication of the verdict, appended to `prompts/SUMMARY+CONCLUSION.txt`.
+
+# Out of scope
+
+- Tuning hyperparameters for the 8-feature setup. Use v1's hyperparameters, since the comparison is supposed to isolate the feature-set effect.
+- Adding any features back. The point is to test exactly Hwangbo's input set.

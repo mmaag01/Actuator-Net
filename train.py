@@ -127,7 +127,7 @@ def main():
     print(f"Scaler : {getattr(config, 'SCALER_TYPE', 'standard').upper()}")
 
     print("Loading and preprocessing data …")
-    train_loader, val_loader, test_loader, scaler_X, scaler_y, feature_names = get_dataloaders(
+    train_loader, val_loader, test_loader, _, _, feature_names = get_dataloaders(
         batch_size=args.batch_size, save_scalers=True
     )
     print(f"Elapsed Time: {(time.perf_counter()-t_start):.3f} s")
@@ -198,3 +198,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

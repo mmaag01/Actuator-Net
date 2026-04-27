@@ -195,223 +195,7 @@ GRU v1                                    13.660    65.97    12.99    11.66     
 Top LR-windowed features (scaled): posAct(4516.16), posErr(4433.13), posDes(285.14), torEst(34.70), torDes(33.23)
 Verdict: NNs barely beat linear (NN/LR = 93.85%) — thesis-reframing finding
 
-
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
+TEST7
 Regime classifier: rolling_std window=200 samples, osc>20.0 / rest<5.0 / hold>|10.0| Nm.
 
 Per-profile GRU RMSE [Nm]:
@@ -475,4 +259,38 @@ posAct                         |   0.0942
 posDes                         |   0.0553
 torDes                         |   0.0156
 posErr                         |  -0.0028
+
+TEST7
+Regime classifier: rolling_std window=200 samples, osc>20.0 / rest<5.0 / hold>|10.0| Nm.
+
+Per-profile GRU RMSE [Nm]:
+  PLC   : 80.913
+  PMS   : 51.577
+  TMS   : 28.261
+  tStep : 3.922
+
+Control-mode: torque=17.974 Nm  velocity=67.850 Nm
+  ratio vel/torque = 3.77×
+
+Severe failures (|err|>100): GRU=2446
+
+Verdict: Failures distributed across 3 profiles (PLC, PMS, TMS). PLC=80.91 PMS=51.58 TMS=28.26 tStep=3.92 Nm. vel/torque ratio = 3.8×.
+
+========================================================================
+[Prompt 16 — 8-Feature Evaluation (no torEst, no i)]
+========================================================================
+
+MLP (3 seeds): 33.288 ± 0.788 Nm RMSE
+GRU (3 seeds): 45.749 ± 0.340 Nm RMSE
+(v1 MLP=13.53 Nm, v1 GRU=13.66 Nm)
+
+Per-profile (median seed):
+  Profile    v1MLP   8ftMLP   v1GRU   8ftGRU
+  tStep       1.73      nan    0.37      nan
+  TMS         4.73    14.33    4.56    20.07
+  PMS         8.18    35.47    8.08    48.65
+  PLC        51.31    58.39   67.25    82.11
+
+Baselines — predict-zero: 50.891 Nm  predict-torDes: 51.033 Nm
+Verdict: Result is ROBUST (MLP std=0.79, GRU std=0.34 Nm < 2 Nm). Kinematic features provide WEAK lift over predict-torDes (8-ft MLP=32.83 Nm, torDes baseline=51.03 Nm, ratio=0.64 — threshold 3×).
 

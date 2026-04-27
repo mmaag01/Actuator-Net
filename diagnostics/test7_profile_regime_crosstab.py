@@ -187,9 +187,7 @@ def tag_profiles(type_arr: np.ndarray) -> np.ndarray:
 def rolling_std_per_file(y: np.ndarray, file_name: np.ndarray,
                          window: int = ROLLING_WINDOW_SAMPLES) -> np.ndarray:
     df = pd.DataFrame({"y": y, "file": file_name})
-    return (df.groupby("file", sort=False)["y"]
-              .transform(lambda s: s.rolling(window, center=True, min_periods=1).std())
-              .values)
+    return (df.groupby("file", sort=False)["y"].transform(lambda s: s.rolling(window, center=True, min_periods=1).std()).values)
 
 
 def classify_regimes(y_true: np.ndarray, file_name: np.ndarray) -> np.ndarray:

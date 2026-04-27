@@ -63,6 +63,8 @@ def _get_feature_cols():
     cols = list(config.FEATURE_COLS)
     if not config.INCLUDE_I2T:
         cols.remove('i2t')
+    if not config.INCLUDE_curr:
+        cols.remove('i')
     if not config.INCLUDE_kd:
         cols.remove('kd')
     if not config.INCLUDE_accelAct:
@@ -223,8 +225,7 @@ def build_datasets(save_scalers: bool = True,
         config.CHECKPOINT_DIR.mkdir(exist_ok=True)
         joblib.dump(scaler_X, config.CHECKPOINT_DIR / "scaler_X.pkl")
         joblib.dump(scaler_y, config.CHECKPOINT_DIR / "scaler_y.pkl")
-        np.save(config.CHECKPOINT_DIR / "feature_names.npy",
-                np.array(feature_names, dtype=object))
+        np.save(config.CHECKPOINT_DIR / "feature_names.npy",np.array(feature_names, dtype=object))
 
     def _build(X_parts, y_parts):
         X_wins, y_wins = [], []
@@ -269,7 +270,6 @@ def get_dataloaders(batch_size: int = None,
     test_loader  = TorchDataLoader(test_ds,  batch_size=batch_size, shuffle=False)
 
     return train_loader, val_loader, test_loader, scaler_X, scaler_y, feature_names
-
 
 # ── Permutation importance ─────────────────────────────────────────────────────
 

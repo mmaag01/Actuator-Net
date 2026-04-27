@@ -9,21 +9,21 @@ Severe failure threshold: |err| > 100 Nm.
 
 | Profile | rest | hold | transition | oscillation | **Total** |
 |---|---|---|---|---|---|
-| **PLC** | 14.55 | 93.47 | 70.79 | 19.37 | 28.24 |
-| **PMS** | 11.23 | 24.83 | 21.67 | 5.96 | 8.93 |
-| **TMS** | 5.09 | 4.21 | 5.81 | 8.93 | 6.16 |
-| **tStep** | 0.56 | — | — | — | 0.56 |
-| **Total** | 3.78 | 65.73 | 12.04 | 14.11 | 14.19 |
+| **PLC** | 7.87 | 71.51 | 36.46 | 84.56 | 80.91 |
+| **PMS** | 15.17 | 70.97 | 36.30 | 52.60 | 51.58 |
+| **TMS** | 17.81 | 18.82 | 28.50 | 37.82 | 28.26 |
+| **tStep** | 3.92 | — | — | — | 3.92 |
+| **Total** | 7.29 | 69.27 | 28.99 | 68.94 | 46.97 |
 
 ### Severe failures (n)
 
 | Profile | rest | hold | transition | oscillation | **Total** |
 |---|---|---|---|---|---|
-| **PLC** | 0 | 179 | 12 | 43 | 234 |
-| **PMS** | 0 | 0 | 0 | 0 | 0 |
-| **TMS** | 0 | 0 | 0 | 0 | 0 |
+| **PLC** | 0 | 103 | 8 | 1712 | 1823 |
+| **PMS** | 0 | 119 | 4 | 496 | 619 |
+| **TMS** | 0 | 0 | 0 | 4 | 4 |
 | **tStep** | 0 | — | — | — | 0 |
-| **Total** | 0 | 179 | 12 | 43 | 234 |
+| **Total** | 0 | 222 | 12 | 2212 | 2446 |
 
 ### Sample count (N)
 
@@ -41,46 +41,51 @@ Severe failure threshold: |err| > 100 Nm.
 
 | Profile | rest | hold | transition | oscillation | **Total** |
 |---|---|---|---|---|---|
-| **PLC** | 14.36 | 92.66 | 72.74 | 19.47 | 28.25 |
-| **PMS** | 11.17 | 24.65 | 21.17 | 6.30 | 9.07 |
-| **TMS** | 5.21 | 6.31 | 5.65 | 7.48 | 5.83 |
-| **tStep** | 0.54 | — | — | — | 0.54 |
-| **Total** | 3.76 | 65.17 | 12.16 | 14.19 | 14.19 |
+| **PLC** | 8.49 | 99.77 | 51.96 | 57.15 | 57.94 |
+| **PMS** | 17.52 | 34.49 | 34.55 | 35.89 | 34.85 |
+| **TMS** | 7.68 | 10.02 | 14.33 | 20.63 | 14.35 |
+| **tStep** | 5.73 | — | — | — | 5.73 |
+| **Total** | 6.83 | 71.84 | 16.99 | 46.55 | 32.59 |
 
 ### Severe failures (n)
 
 | Profile | rest | hold | transition | oscillation | **Total** |
 |---|---|---|---|---|---|
-| **PLC** | 0 | 179 | 12 | 43 | 234 |
-| **PMS** | 0 | 0 | 0 | 0 | 0 |
+| **PLC** | 0 | 179 | 12 | 613 | 804 |
+| **PMS** | 0 | 0 | 0 | 124 | 124 |
 | **TMS** | 0 | 0 | 0 | 0 | 0 |
 | **tStep** | 0 | — | — | — | 0 |
-| **Total** | 0 | 179 | 12 | 43 | 234 |
+| **Total** | 0 | 179 | 12 | 737 | 928 |
 
 ## Control-mode aggregation
 
 | Mode | Profiles | N | MLP RMSE [Nm] | GRU RMSE [Nm] | ratio vel/torq |
 |---|---|---|---|---|---|
-| torque   | TMS, tStep | 20,609 | 3.680 | 3.883 | — |
-| velocity | PLC, PMS | 16,190 | 20.983 | 20.946 | MLP×5.7 GRU×5.4 |
+| torque   | TMS, tStep | 20,609 | 10.044 | 17.974 | — |
+| velocity | PLC, PMS | 16,190 | 47.809 | 67.850 | MLP×4.8 GRU×3.8 |
 
 ## Severe failure localisation
 
-Total severe failures: GRU=234, MLP=234
+Total severe failures: GRU=2446, MLP=928
 
 | (profile, regime) | GRU count | MLP count | % of GRU total |
 |---|---|---|---|
-| (PLC, hold) | 179 | 179 | 76.5% |
-| (PLC, oscillation) | 43 | 43 | 18.4% |
-| (PLC, transition) | 12 | 12 | 5.1% |
+| (PLC, oscillation) | 1712 | 613 | 70.0% |
+| (PMS, oscillation) | 496 | 124 | 20.3% |
+| (PMS, hold) | 119 | 0 | 4.9% |
+| (PLC, hold) | 103 | 179 | 4.2% |
+| (PLC, transition) | 8 | 12 | 0.3% |
+| (PMS, transition) | 4 | 0 | 0.2% |
+| (TMS, oscillation) | 4 | 0 | 0.2% |
 
 ## Architecture order swaps (GRU vs MLP)
 
-  (PLC, transition): MLP=72.74 GRU=70.79 Nm [GRU better — inverts overall MLP advantage]
-  (PLC, oscillation): MLP=19.47 GRU=19.37 Nm [GRU better — inverts overall MLP advantage]
-  (PMS, oscillation): MLP=6.30 GRU=5.96 Nm [GRU better — inverts overall MLP advantage]
-  (TMS, rest): MLP=5.21 GRU=5.09 Nm [GRU better — inverts overall MLP advantage]
+  (PLC, rest): MLP=8.49 GRU=7.87 Nm [GRU better — inverts overall MLP advantage]
+  (PLC, hold): MLP=99.77 GRU=71.51 Nm [GRU better — inverts overall MLP advantage]
+  (PLC, transition): MLP=51.96 GRU=36.46 Nm [GRU better — inverts overall MLP advantage]
+  (PMS, rest): MLP=17.52 GRU=15.17 Nm [GRU better — inverts overall MLP advantage]
+  (tStep, rest): MLP=5.73 GRU=3.92 Nm [GRU better — inverts overall MLP advantage]
 
 ## Verdict
 
-**PLC is the problem, not velocity-control generally: PMS RMSE=8.93 Nm is 1.5× TMS (6.16 Nm, within the 2× threshold), but PLC RMSE=28.24 Nm is 4.6× worse — the PLC profile is the outlier, not velocity-controlled excitation in general. Dominant failure cell: (PLC, hold) accounts for 76% of GRU severe failures (n=179/234).**
+**Failures distributed across 3 profiles (PLC, PMS, TMS). PLC=80.91 PMS=51.58 TMS=28.26 tStep=3.92 Nm. vel/torque ratio = 3.8×.**
