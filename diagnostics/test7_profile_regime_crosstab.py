@@ -39,7 +39,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 import config
-from dataset import _load_dataframes, _make_windows, _split_df
+from preprocessing import _load_dataframes, _make_windows, _split_df
 from models import ActuatorGRU, WindowedMLP
 
 OUTPUT_DIR   = Path(__file__).resolve().parent / "outputs"
@@ -47,7 +47,7 @@ SUMMARY_TXT  = OUTPUT_DIR / "SUMMARY.txt"
 SUMMARY_CONC = PROJECT_ROOT / "prompts" / "SUMMARY+CONCLUSION.txt"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-from dataset import _get_feature_cols
+from preprocessing import _get_feature_cols
 import re as _re
 
 def _remove_section(path: Path, header_text: str) -> None:

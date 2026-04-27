@@ -18,23 +18,49 @@ USE_tStep_CmdErrs   = False
 USE_Misc            = False
 ZERO_OFFSET         = False
 
-UNITS={'t':'s', 'tor':'Nm', 'vel':'rad/s', 
-               'pos':'rad', 'accel':'rad/s^2', 'i':'A'}
+UNITS={'time':'s', 'torque':'Nm', 'velocity':'rad/s', 
+               'position':'rad', 'current':'A'}
 
 # ── Features ─────────────────────────────────────────────────────────────────
 FEATURE_COLS = [
-    't', 'torDes', 'posDes', 'velDes', 'posAct', 'posErr', 'velAct', 
-    'velErr', 'accelAct', 'i', 'torEst', 'torKdEst', 'kd', 'i2t',
+    'torDes', 'posDes', 'velDes', 'posAct', 'posErr', 'velErr',
+    'velAct',  'accelAct', 'i', 'torEst',
+    'torKdEst', 'kd', 'i2t', 't',
 ]
 TARGET_COL  = 'torAct'
-INCLUDE_I2T = True   # set True to add i2t as an additional input feature
-INCLUDE_torKdEst = True
-INCLUDE_kd = True
-INCLUDE_posDes = True
-INCLUDE_accelAct = True
-INCLUDE_t = True
+INCLUDE_I2T      = False   # i2t (thermal accumulation proxy)
+INCLUDE_torKdEst = False   # Kd contribution to torEst decomposition
+INCLUDE_torEst   = False
+INCLUDE_kd       = False   # derivative gain value
+INCLUDE_posDes   = True   # desired position (always on in v1)
+INCLUDE_accelAct = True   # actual acceleration (always on in v1)
+INCLUDE_t        = False   # timestamp — adds absolute-time signal
 
-N_FEATURES  = len(FEATURE_COLS) - int(not INCLUDE_I2T) - int(not INCLUDE_torKdEst) - int(not INCLUDE_kd) - int(not INCLUDE_posDes) - int(not INCLUDE_accelAct)
+N_FEATURES  = (len(FEATURE_COLS)
+               - int(not INCLUDE_I2T)
+               - int(not INCLUDE_torKdEst)
+               - int(not INCLUDE_torEst)
+               - int(not INCLUDE_kd)
+               - int(not INCLUDE_posDes)
+               - int(not INCLUDE_accelAct)
+               - int(not INCLUDE_t))
+
+# ── Feature Scaling ───────────────────────────────────────────────────────────
+SCALER_TYPE = 'standard'  # Options: 'standard', 'minmax', 'robust', 'quantile', 'power', 'polynomial'
+
+# Polynomial feature expansion (used when SCALER_TYPE = 'polynomial')
+POLY_DEGREE = 2                # Degree of polynomial features (2 = quadratic)
+POLY_INTERACTION_ONLY = False  # If True, only interaction terms (no x^2, x^3, etc.)
+POLY_INCLUDE_BIAS = False      # Include bias column (constant term)
+
+# Scaler-specific parameters (advanced)
+SCALER_PARAMS = {
+    'standard': {},
+    'minmax': {'feature_range': (0, 1)},
+    'robust': {'quantile_range': (25.0, 75.0)},  # Less sensitive to outliers
+    'quantile': {'n_quantiles': 1000, 'output_distribution': 'uniform'},
+    'power': {'method': 'yeo-johnson', 'standardize': True},  # Gaussianize features
+}
 
 # ── Sequence ──────────────────────────────────────────────────────────────────
 SEQ_LEN = 30          # window / history length (timesteps)

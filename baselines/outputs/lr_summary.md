@@ -4,10 +4,10 @@
 
 | Model | Features | Overall RMSE | Hold RMSE | Osc RMSE | Trans RMSE | Rest RMSE |
 |-------|----------|-------------|-----------|---------|------------|-----------|
-| LR-physics (scaled) | torDes, i | 20.63 Nm | 66.43 | 26.33 | 14.74 | 3.74 |
-| LR-minimal (scaled) | 4 feats | 20.38 Nm | 65.35 | 26.12 | 14.29 | 3.57 |
-| LR-full (scaled) | 10 feats | 19.14 Nm | 64.48 | 24.33 | 12.10 | 3.97 |
-| LR-windowed (scaled) | 10×30=300, ridge | 13.48 Nm | 65.34 | 12.64 | 11.46 | 4.19 |
+| LR-physics (unscaled) | torDes, i | 20.77 Nm | 66.35 | 27.02 | 14.69 | 3.51 |
+| LR-minimal (scaled) | 4 feats | 20.53 Nm | 65.28 | 26.81 | 14.24 | 3.33 |
+| LR-full (unscaled) | 10 feats | 20.07 Nm | 64.72 | 26.28 | 12.73 | 3.70 |
+| LR-windowed (scaled) | 9×30=300, ridge | 14.82 Nm | 64.52 | 15.90 | 11.85 | 3.80 |
 | MLP v1 | 10 × 30 | 13.53 Nm | 64.99 | 12.92 | 11.41 | 4.01 |
 | GRU v1 | 10 × 30 | 13.66 Nm | 65.97 | 12.99 | 11.66 | 3.80 |
 
@@ -15,17 +15,16 @@
 
 | Rank | Feature | Summed |coef| |
 |------|---------|-----------------|
-| 1 | posAct | 57.4942 |
-| 2 | posErr | 57.0133 |
-| 3 | torEst | 36.4902 |
-| 4 | torDes | 17.0705 |
-| 5 | velAct | 15.9790 |
-| 6 | velErr | 14.2281 |
-| 7 | i | 13.9479 |
-| 8 | velDes | 5.8087 |
-| 9 | accelAct | 1.8801 |
-| 10 | posDes | 1.1093 |
+| 1 | i | 39.8498 |
+| 2 | velAct | 25.3311 |
+| 3 | velErr | 23.4957 |
+| 4 | torDes | 20.6864 |
+| 5 | posAct | 12.8975 |
+| 6 | posErr | 12.6790 |
+| 7 | velDes | 11.7332 |
+| 8 | accelAct | 7.3759 |
+| 9 | posDes | 0.2883 |
 
 ## Verdict
 
-**NNs barely beat linear (NN/LR = 100.38%) — thesis-reframing finding**
+**NNs barely beat linear (NN/LR = 91.31%) — thesis-reframing finding**

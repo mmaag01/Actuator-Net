@@ -151,453 +151,10 @@ A: NN/LR = 100.38% | posAct(57.49), posErr(57.01), torEst(36.49), torDes(17.07),
 B: NN/LR = 101.33% | torEst(33.41), torDes(18.05), i(9.83), velAct(8.62), velErr(7.41)
 C: NN/LR = 101.43% torEst(33.41), torDes(18.05), i(9.83), velAct(8.62), velErr(7.41)
 
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-Regime classifier: rolling_std window=200 samples, osc>20.0 / rest<5.0 / hold>|10.0| Nm.
+========================================================================
+[Test 8]
+========================================================================
 
-Per-profile GRU RMSE [Nm]:
-  PLC   : 27.961
-  PMS   : 8.171
-  TMS   : 5.286
-  tStep : 0.371
-
-Control-mode: torque=3.326 Nm  velocity=19.794 Nm
-  ratio vel/torque = 5.95×
-
-Severe failures (|err|>100): GRU=234
-
-Verdict: Profile × regime analysis: PLC=27.96 PMS=8.17 TMS=5.29 tStep=0.37 Nm. vel/torque ratio = 6.0×.
-
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
-[Test 7 — Profile × Regime cross-tabulation]
-=
 Regime classifier: rolling_std window=200 samples, osc>20.0 / rest<5.0 / hold>|10.0| Nm.
 
 Per-profile GRU RMSE [Nm]:
@@ -613,446 +170,309 @@ Severe failures (|err|>100): GRU=234
 
 Verdict: PLC is the problem, not velocity-control generally: PMS RMSE=8.17 Nm is 1.5× TMS (5.29 Nm, within the 2× threshold), but PLC RMSE=27.96 Nm is 5.3× worse — the PLC profile is the outlier, not velocity-controlled excitation in general. Dominant failure cell: (PLC, hold) accounts for 76% of GRU severe failures (n=179/234).
 
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
+========================================================================
+[Test 8]
+========================================================================
+
 Failures analyzed: 234
 Best k=5  silhouette=0.6552
 Clusters: C0=60 (26%)  C1=131 (56%)  C2=14 (6%)  C3=15 (6%)  C4=14 (6%)
 
 Verdict: Many failure modes (best k=5, silhouette=0.655): C0=60 (26%), C1=131 (56%), C2=14 (6%), C3=15 (6%), C4=14 (6%). The backlash-ringing hypothesis from Test 5b applies to only a subset of failures — multiple distinct mechanisms present. idx=38180 not found in this evaluation split. Loading diagnostic: 100% of failures have zero |torDes| in the input window — the loading event precedes the SEQ_LEN=30 window, confirming that longer windows or state-carrier features are required.
 
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-[Test 8 — PLC failure characterization]
-=
-Failures analyzed: 234
-Best k=5  silhouette=0.6552
-Clusters: C0=60 (26%)  C1=131 (56%)  C2=14 (6%)  C3=15 (6%)  C4=14 (6%)
+========================================================================
+[Prompt 6 — Linear Regression Baseline]
+========================================================================
 
-Verdict: Many failure modes (best k=5, silhouette=0.655): C0=60 (26%), C1=131 (56%), C2=14 (6%), C3=15 (6%), C4=14 (6%). The backlash-ringing hypothesis from Test 5b applies to only a subset of failures — multiple distinct mechanisms present. idx=38180 not found in this evaluation split. Loading diagnostic: 100% of failures have zero |torDes| in the input window — the loading event precedes the SEQ_LEN=30 window, confirming that longer windows or state-carrier features are required.
+Model                               Overall RMSE     Hold      Osc    Trans     Rest
+LR-physics (unscaled)                     20.773    66.35    27.02    14.69     3.51
+LR-minimal (unscaled)                     20.525    65.28    26.81    14.24     3.33
+LR-full (unscaled)                        19.301    64.33    25.03    12.00     3.74
+LR-windowed (scaled)                      14.416    69.88    13.74    11.53     4.00
+MLP v1                                    13.530    64.99    12.92    11.41     4.01
+GRU v1                                    13.660    65.97    12.99    11.66     3.80
+
+Top LR-windowed features (scaled): posAct(4516.16), posErr(4433.13), posDes(285.14), torEst(34.70), torDes(33.23)
+Verdict: NNs barely beat linear (NN/LR = 93.85%) — thesis-reframing finding
+
+
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+[Test 7 — Profile × Regime cross-tabulation]
+=
+Regime classifier: rolling_std window=200 samples, osc>20.0 / rest<5.0 / hold>|10.0| Nm.
+
+Per-profile GRU RMSE [Nm]:
+  PLC   : 28.244
+  PMS   : 8.929
+  TMS   : 6.157
+  tStep : 0.557
+
+Control-mode: torque=3.883 Nm  velocity=20.946 Nm
+  ratio vel/torque = 5.39×
+
+Severe failures (|err|>100): GRU=234
+
+Verdict: PLC is the problem, not velocity-control generally: PMS RMSE=8.93 Nm is 1.5× TMS (6.16 Nm, within the 2× threshold), but PLC RMSE=28.24 Nm is 4.6× worse — the PLC profile is the outlier, not velocity-controlled excitation in general. Dominant failure cell: (PLC, hold) accounts for 76% of GRU severe failures (n=179/234).
+
+========================================================================
+[Prompt 6 — Linear Regression Baseline]
+========================================================================
+
+Model                               Overall RMSE     Hold      Osc    Trans     Rest
+LR-physics (unscaled)                     20.773    66.35    27.02    14.69     3.51
+LR-minimal (scaled)                       20.525    65.28    26.81    14.24     3.33
+LR-full (unscaled)                        20.065    64.72    26.28    12.73     3.70
+LR-windowed (scaled)                      14.817    64.52    15.90    11.85     3.80
+MLP v1                                    13.530    64.99    12.92    11.41     4.01
+GRU v1                                    13.660    65.97    12.99    11.66     3.80
+
+Top LR-windowed features (scaled): i(39.85), velAct(25.33), velErr(23.50), torDes(20.69), posAct(12.90)
+Verdict: NNs barely beat linear (NN/LR = 91.31%) — thesis-reframing finding
+
+
+========================================================================
+[Permutation Feature Importance — MLP]
+========================================================================
+
+Feature                          | RMSE Increase (Nm)
+--------------------------------------------------
+i                              |  56.2766
+accelAct                       |   4.5181
+velErr                         |   3.1767
+velAct                         |   2.8390
+velDes                         |   1.9132
+posAct                         |   1.1094
+posDes                         |   1.0417
+posErr                         |   0.8249
+torDes                         |   0.2246
+
+
+========================================================================
+[Permutation Feature Importance — GRU]
+========================================================================
+
+Feature                          | RMSE Increase (Nm)
+--------------------------------------------------
+i                              |  48.0975
+velErr                         |   1.3508
+velAct                         |   1.3068
+accelAct                       |   0.7613
+velDes                         |   0.3061
+posAct                         |   0.0942
+posDes                         |   0.0553
+torDes                         |   0.0156
+posErr                         |  -0.0028
+

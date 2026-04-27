@@ -42,7 +42,7 @@ class ImportData:
             for i, file in enumerate(file_list):
                 df = pd.read_csv(file, usecols=self.cols)
                 assert len(df.columns.tolist()) == len(self.cols), f"{Path(file).stem}: expected columns {self.cols}, got {df.columns.tolist()}."
-                df = df.astype(float)
+                df = self.convertUnits(df)
                 df['category'] = 'main'
                 df['dataset_id'] = i  # Track which dataset each row came from
                 df['file_name'] = Path(file).stem  # Store filename
@@ -66,7 +66,7 @@ class ImportData:
             for i, file in enumerate(file_list):
                 df = pd.read_csv(file)
                 assert len(df.columns.tolist()) == len(self.cols), f"{Path(file).stem}: expected columns {self.cols}, got {df.columns.tolist()}."
-                df = df.astype(float)
+                df = self.convertUnits(df)
                 df['category'] = 'crashes'
                 df['dataset_id'] = i  # Track which dataset each row came from
                 df['file_name'] = Path(file).stem  # Store filename
@@ -89,7 +89,7 @@ class ImportData:
             for i, file in enumerate(file_list):
                 df = pd.read_csv(file, usecols=self.cols)
                 assert len(df.columns.tolist()) == len(self.cols), f"{Path(file).stem}: expected columns {self.cols}, got {df.columns.tolist()}."
-                df = df.astype(float)
+                df = self.convertUnits(df)
                 df['category'] = 'other'
                 df['dataset_id'] = i  # Track which dataset each row came from
                 df['file_name'] = Path(file).stem  # Store filename
@@ -121,45 +121,63 @@ class ImportData:
             return None
 
     # Process all CSV files in input folder and export edited versions to output folder
-    def convertUnits(self, df):
+    def convertUnits(self, df: pd.DataFrame) -> pd.DataFrame:
+        if isinstance(df, dict):
+            df = pd.DataFrame(df)
         units = self.units
-        to_milli = 1e3
-        rad_s_to_rpm = 60 / (2 * np.pi)
+        from_milli = 0.001
+        rpm_to_rad_s = 60 / (2 * np.pi)
         rad_to_inc = 2 * np.pi / 4096.0
+        rpm_to_inc_s = 60 / 4096.0
         #for df in self.combined:
-        if units['t'] == 'ms':
-            df['t'] *= to_milli
-        if units['tor'] == 'mNm':
-            df['torDes'] *= to_milli
-            df['torAct'] *= to_milli
-            df['torKdEst'] *= to_milli
-            df['torEst'] *= to_milli
-            df['kd'] *= to_milli
-        if units['vel'] == 'rpm':
-            df['velDes'] *= rad_s_to_rpm
-            df['velAct'] *= rad_s_to_rpm
-            df['kd'] *= rad_s_to_rpm
-        if units['vel'] == 'mrpm':
-            df['velDes'] *= rad_s_to_rpm * to_milli
-            df['velAct'] *= rad_s_to_rpm * to_milli
-        if units['vel'] == 'inc/s':
-            df['velDes'] *= rad_to_inc
-            df['velAct'] *= rad_to_inc
-        if units['pos'] == 'inc':
+        if units['time'] == 's':
+            df['t'] *= from_milli
+        if units['torque'] == 'Nm':
+            df['torDes'] *= from_milli
+            df['torAct'] *= from_milli
+            df['torKdEst'] *= from_milli
+            df['torEst'] *= from_milli
+            df['torErr'] *= from_milli
+            df['kd'] *= from_milli
+        if units['velocity'] == 'rpm':
+            df['velDes'] *= from_milli
+            df['velAct'] *= from_milli
+            df['accelAct'] *= from_milli
+            df['kd'] *= rpm_to_rad_s
+        if units['velocity'] == 'mrad/s':
+            df['velDes'] *= rpm_to_rad_s
+            df['velAct'] *= rpm_to_rad_s
+            df['accelAct'] *= rpm_to_rad_s
+            df['kd'] *= from_milli
+        if units['velocity'] == 'rad/s':
+            df['velDes'] *= rpm_to_rad_s * from_milli
+            df['velAct'] *= rpm_to_rad_s * from_milli
+            df['accelAct'] *= rpm_to_rad_s * from_milli
+        if units['velocity'] == 'minc/s':
+            df['velDes'] *= rpm_to_inc_s
+            df['velAct'] *= rpm_to_inc_s
+            df['accelAct'] *= rpm_to_inc_s
+            df['kd'] /= rad_to_inc / from_milli 
+        if units['velocity'] == 'inc/s':
+            df['velDes'] *= rpm_to_rad_s * from_milli * rad_to_inc
+            df['velAct'] *= rpm_to_rad_s * from_milli * rad_to_inc
+            df['accelAct'] *= rpm_to_inc_s * from_milli
+            df['kd'] /= rad_to_inc
+        if units['position'] == 'minc':
+            df['posDes'] /= from_milli
+            df['posAct'] /= from_milli
+        if units['position'] == 'rad':
             df['posDes'] *= rad_to_inc
             df['posAct'] *= rad_to_inc
-        if units['accel'] == 'rpm/s':
-            df['accelAct'] *= rad_s_to_rpm
-        if units['accel'] == 'mrpm/s':
-            df['accelAct'] *= rad_s_to_rpm * to_milli
-        if units['accel'] == 'inc/s^2':
-            df['accelAct'] *= rad_to_inc
-        if units['i'] == 'mA':
-            df['i'] *= to_milli
+        if units['position'] == 'mrad':
+            df['posDes'] *= rad_to_inc / from_milli
+            df['posAct'] *= rad_to_inc / from_milli
+        if units['current'] == 'A':
+            df['i'] *= from_milli
         if self.zero_offset:
             df["posDes"] -= df["posDes"].iloc[0]
             df["posAct"] -= df["posAct"].iloc[0]
-        return df
+        return df.astype(float)
 
 class ProcessRawData:
     def __init__(

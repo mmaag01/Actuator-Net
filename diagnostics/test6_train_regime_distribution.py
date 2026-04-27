@@ -38,7 +38,7 @@ from _common import (  # noqa: E402
     save_summary,
 )
 import config  # noqa: E402
-from dataset import _get_feature_cols, _load_dataframes, _split_df  # noqa: E402
+from preprocessing import _get_feature_cols, _load_dataframes, _split_df  # noqa: E402
 from test2_regime_residuals import (  # noqa: E402
     REGIME_COLORS,
     REGIMES,

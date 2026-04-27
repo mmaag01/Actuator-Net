@@ -19,7 +19,7 @@ for _p in (_PROJECT_ROOT,):
     if str(_p) not in sys.path:
         sys.path.insert(0, str(_p))
 
-from dataset import _load_dataframes
+from preprocessing import _load_dataframes
 from feature_engineering import (
     CAUSALITY_LAG,
     ENGINEERED_FEATURE_COLS,

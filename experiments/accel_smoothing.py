@@ -54,7 +54,7 @@ V2_RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 config.CHECKPOINT_DIR = V2_CKPT_DIR
 config.RESULTS_DIR    = V2_RESULTS_DIR
 
-from dataset import (  # noqa: E402  (must follow config patch)
+from preprocessing import (  # noqa: E402  (must follow config patch)
     _get_feature_cols,
     _load_dataframes,
     _make_windows,

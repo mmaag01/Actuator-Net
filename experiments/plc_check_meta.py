@@ -6,7 +6,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import joblib
 import torch
 import config
-from dataset import _get_feature_cols
+from preprocessing import _get_feature_cols
 
 feat_cols = _get_feature_cols()
 sx = joblib.load("checkpoints/per_profile/PLC_scaler_X.pkl")

@@ -15,7 +15,7 @@ import torch # type: ignore
 import torch.nn as nn # type: ignore
 
 import config
-from dataset import get_dataloaders
+from preprocessing import get_dataloaders, permutation_importance
 from models import ActuatorGRU, WindowedMLP
 
 
@@ -124,9 +124,10 @@ def main():
 
     device = get_device()
     print(f"Device : {device}")
+    print(f"Scaler : {getattr(config, 'SCALER_TYPE', 'standard').upper()}")
 
     print("Loading and preprocessing data …")
-    train_loader, val_loader, test_loader, scaler_X, scaler_y = get_dataloaders(
+    train_loader, val_loader, test_loader, scaler_X, scaler_y, feature_names = get_dataloaders(
         batch_size=args.batch_size, save_scalers=True
     )
     print(f"Elapsed Time: {(time.perf_counter()-t_start):.3f} s")
@@ -134,10 +135,12 @@ def main():
     print(f"\nTest Samples: {len(test_loader)}")
     print(f"\nValidation Samples: {len(val_loader)}")
     print(f"\nWindow Size: {config.SEQ_LEN}")
-    n_features = config.N_FEATURES
+    # Use actual feature count from data — handles polynomial expansion correctly
+    n_features = len(feature_names)
+    print(f"\nFeatures ({n_features}): {feature_names}")
     model = build_model(args.model, n_features).to(device)
     print(f"\nModel: {args.model.upper()} | Parameters: {count_parameters(model):,}")
-    print(f"\nFeaures: {config.N_FEATURES} | Hidden Layers: {config.MLP_N_LAYERS} | Hidden Layer Size: {config.MLP_HIDDEN_SIZE}")
+    print(f"\nHidden Layers: {config.MLP_N_LAYERS} | Hidden Layer Size: {config.MLP_HIDDEN_SIZE}")
 
     criterion = nn.MSELoss()
     optimizer = torch.optim.Adam(

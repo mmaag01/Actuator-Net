@@ -32,7 +32,7 @@ for _p in (_PROJECT_ROOT, _DIAG):
         sys.path.insert(0, str(_p))
 
 import config
-from dataset import (
+from preprocessing import (
     ActuatorDataset, _get_feature_cols, _load_dataframes,
     _make_windows, _split_df,
 )

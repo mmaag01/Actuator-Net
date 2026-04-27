@@ -48,7 +48,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 import config  # noqa: E402
-from dataset import _load_dataframes, _split_df  # noqa: E402
+from preprocessing import _load_dataframes, _split_df  # noqa: E402
 
 from _common import FIGSIZE, OUTPUT_DIR, SAMPLE_HZ, save_summary  # noqa: E402
 

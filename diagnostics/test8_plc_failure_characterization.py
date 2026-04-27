@@ -41,7 +41,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 import config
-from dataset import _load_dataframes, _make_windows, _split_df, _get_feature_cols
+from preprocessing import _load_dataframes, _make_windows, _split_df, _get_feature_cols
 from models import ActuatorGRU
 
 OUTPUT_DIR   = Path(__file__).resolve().parent / "outputs"

@@ -27,7 +27,7 @@ for _p in (_PROJECT_ROOT, _DIAG):
         sys.path.insert(0, str(_p))
 
 import config
-from dataset import _load_dataframes, _split_df
+from preprocessing import _load_dataframes, _split_df
 from feature_engineering import compute_features
 
 OUT_DIR = _HERE / "outputs"

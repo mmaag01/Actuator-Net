@@ -52,7 +52,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 import config
-from dataset import _get_feature_cols, _load_dataframes, _make_windows, _split_df
+from preprocessing import _get_feature_cols, _load_dataframes, _make_windows, _split_df
 from models import ActuatorGRU, WindowedMLP
 
 PER_PROF_DIR = config.PROJECT_ROOT / "checkpoints" / "per_profile"

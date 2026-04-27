@@ -45,7 +45,7 @@ import config
 # Run on v1 baseline data (no SG smoothing) for comparability
 config.SMOOTH_ACCEL = False
 
-from dataset import _get_feature_cols, _load_dataframes, _make_windows, _split_df  # noqa: E402
+from preprocessing import _get_feature_cols, _load_dataframes, _make_windows, _split_df  # noqa: E402
 
 OUTPUT_DIR = Path(__file__).resolve().parent / "outputs"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)

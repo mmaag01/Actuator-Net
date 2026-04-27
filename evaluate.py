@@ -17,7 +17,7 @@ import numpy as np
 import torch # type: ignore
 
 import config
-from dataset import get_dataloaders
+from preprocessing import get_dataloaders
 from models import ActuatorGRU, WindowedMLP
 
 
@@ -263,10 +263,10 @@ def main():
     device = get_device()
 
     scaler_X, scaler_y = _load_scalers()
-    print("Loading test data …")
-    _, _, test_loader, _, _ = get_dataloaders(
+    _, _, test_loader, _, _, feature_names = get_dataloaders(
         save_scalers=False, scaler_X=scaler_X, scaler_y=scaler_y
     )
+    print(f"Loading test data with {feature_names} .…")
     config.RESULTS_DIR.mkdir(exist_ok=True)
 
     if args.ensemble:

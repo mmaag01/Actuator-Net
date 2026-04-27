@@ -33,7 +33,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 import config  # noqa: E402
-from dataset import (  # noqa: E402
+from preprocessing import (  # noqa: E402
     _get_feature_cols,
     _load_dataframes,
     _make_windows,

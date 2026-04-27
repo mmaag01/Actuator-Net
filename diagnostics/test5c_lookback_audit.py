@@ -31,7 +31,7 @@ for _p in (_PROJECT_ROOT, _HERE):
 
 from _common import OUTPUT_DIR, SAMPLE_HZ, build_test_arrays, get_device, save_summary  # noqa: E402
 import config  # noqa: E402
-from dataset import _load_dataframes, _split_df  # noqa: E402
+from preprocessing import _load_dataframes, _split_df  # noqa: E402
 
 SEVERE_ERR_THR = 100.0   # Nm — |pred - torAct| above this = severe failure
 LOW_TORQUE_THR = 20.0    # Nm — |torAct| below this = "unloaded"
