@@ -19,7 +19,7 @@ USE_Misc            = False
 ZERO_OFFSET         = False
 
 UNITS={'time':'s', 'torque':'Nm', 'velocity':'rad/s', 
-               'position':'rad', 'current':'A'}
+               'position':'rad', 'current':'mA'}
 
 # ── Features ─────────────────────────────────────────────────────────────────
 # V1: torDes, posDes, velDes, posErr, velErr, posAct, velAct, accelAct, i, torEst
@@ -30,14 +30,14 @@ FEATURE_COLS = [
     'torKdEst', 'kd', 'i2t', 't',
 ]
 TARGET_COL  = 'torAct'
-INCLUDE_I2T      = True   # i2t (thermal accumulation proxy)
+INCLUDE_I2T      = False   # i2t (thermal accumulation proxy)
 INCLUDE_curr     = True
-INCLUDE_torKdEst = True   # Kd contribution to torEst decomposition
+INCLUDE_torKdEst = False   # Kd contribution to torEst decomposition
 INCLUDE_torEst   = True
-INCLUDE_kd       = True   # derivative gain value
+INCLUDE_kd       = False   # derivative gain value
 INCLUDE_posDes   = True   # desired position (always on in v1)
 INCLUDE_accelAct = True   # actual acceleration (always on in v1)
-INCLUDE_t        = True   # timestamp — adds absolute-time signal
+INCLUDE_t        = False   # timestamp — adds absolute-time signal
 
 N_FEATURES  = (len(FEATURE_COLS)
                - int(not INCLUDE_I2T)
@@ -50,7 +50,7 @@ N_FEATURES  = (len(FEATURE_COLS)
                - int(not INCLUDE_t))
 
 # ── Feature Scaling ───────────────────────────────────────────────────────────
-SCALER_TYPE = 'standard'  # Options: 'standard', 'minmax', 'robust', 'quantile', 'power', 'polynomial'
+SCALER_TYPE = 'power'  # Options: 'standard', 'minmax', 'robust', 'quantile', 'power', 'polynomial'
 
 # Polynomial feature expansion (used when SCALER_TYPE = 'polynomial')
 POLY_DEGREE = 2                # Degree of polynomial features (2 = quadratic)
@@ -70,13 +70,23 @@ SCALER_PARAMS = {
 SEQ_LEN = 30          # window / history length (timesteps)
 
 # ── MLP hyperparameters ───────────────────────────────────────────────────────
+# v.1 32, 3
 MLP_HIDDEN_SIZE = 32
-MLP_N_LAYERS    = 3
+MLP_N_LAYERS    = 3 # try
 
 # ── GRU hyperparameters ───────────────────────────────────────────────────────
 GRU_HIDDEN_SIZE = 64
 GRU_N_LAYERS    = 4
 GRU_DROPOUT     = 0.0
+
+# ── Wiener-Hammerstein (dynoNet) hyperparameters ─────────────────────────────
+# v.1 : 8, 2, 2, 20, True
+# v.2 : 
+WH_CHANNELS   = 8     # intermediate channels for both G-blocks
+WH_NA         = 3     # denominator order (ignored when WH_STABLE=True) Higher order = more expressive but slower.
+WH_NB         = 3     # numerator order (ignored when WH_STABLE=True)   Higher order = more expressive but slower.
+WH_MLP_HIDDEN = 32    # hidden neurons in the inter-block MLP
+WH_STABLE     = True  # sigmoid-based 2nd-order stable pole reparametrisation
 
 # ── Training ──────────────────────────────────────────────────────────────────
 BATCH_SIZE       = 64

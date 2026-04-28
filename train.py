@@ -16,14 +16,14 @@ import torch.nn as nn # type: ignore
 
 import config
 from preprocessing import get_dataloaders, permutation_importance
-from models import ActuatorGRU, WindowedMLP
+from models import ActuatorGRU, WindowedMLP, WienerHammersteinNet
 
 
 # ── CLI ───────────────────────────────────────────────────────────────────────
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Train actuator torque model")
-    parser.add_argument("--model", choices=["mlp", "gru"], required=True,
+    parser.add_argument("--model", choices=["mlp", "gru", "wh"], required=True,
                         help="Model architecture to train")
     parser.add_argument("--epochs", type=int, default=config.MAX_EPOCHS)
     parser.add_argument("--batch_size", type=int, default=config.BATCH_SIZE)
@@ -49,6 +49,15 @@ def build_model(model_type: str, n_features: int) -> nn.Module:
             n_features=n_features,
             hidden_size=config.MLP_HIDDEN_SIZE,
             n_layers=config.MLP_N_LAYERS,
+        )
+    if model_type == "wh":
+        return WienerHammersteinNet(
+            n_features=n_features,
+            n_channels=config.WH_CHANNELS,
+            na=config.WH_NA,
+            nb=config.WH_NB,
+            mlp_hidden=config.WH_MLP_HIDDEN,
+            stable=config.WH_STABLE,
         )
     return ActuatorGRU(
         n_features=n_features,
@@ -93,8 +102,21 @@ def eval_epoch(model, loader, criterion, device) -> float:
 
 def save_checkpoint(model, optimizer, epoch, val_loss, model_type, n_features):
     config.CHECKPOINT_DIR.mkdir(exist_ok=True)
-    hidden_size = config.MLP_HIDDEN_SIZE if model_type == "mlp" else config.GRU_HIDDEN_SIZE
-    n_layers    = config.MLP_N_LAYERS    if model_type == "mlp" else config.GRU_N_LAYERS
+    if model_type == "wh":
+        model_config = {
+            "seq_len":    config.SEQ_LEN,
+            "n_features": n_features,
+            "n_channels": config.WH_CHANNELS,
+            "mlp_hidden": config.WH_MLP_HIDDEN,
+            "stable":     config.WH_STABLE,
+        }
+    else:
+        model_config = {
+            "seq_len":     config.SEQ_LEN,
+            "n_features":  n_features,
+            "hidden_size": config.MLP_HIDDEN_SIZE if model_type == "mlp" else config.GRU_HIDDEN_SIZE,
+            "n_layers":    config.MLP_N_LAYERS    if model_type == "mlp" else config.GRU_N_LAYERS,
+        }
     torch.save(
         {
             "epoch": epoch,
@@ -102,12 +124,7 @@ def save_checkpoint(model, optimizer, epoch, val_loss, model_type, n_features):
             "optimizer_state_dict": optimizer.state_dict(),
             "val_loss": val_loss,
             "model_type": model_type,
-            "config": {
-                "seq_len":     config.SEQ_LEN,
-                "n_features":  n_features,
-                "hidden_size": hidden_size,
-                "n_layers":    n_layers,
-            },
+            "config": model_config,
         },
         config.CHECKPOINT_DIR / f"best_model_{model_type}.pt",
     )
@@ -140,19 +157,28 @@ def main():
     print(f"\nFeatures ({n_features}): {feature_names}")
     model = build_model(args.model, n_features).to(device)
     print(f"\nModel: {args.model.upper()} | Parameters: {count_parameters(model):,}")
-    print(f"\nHidden Layers: {config.MLP_N_LAYERS} | Hidden Layer Size: {config.MLP_HIDDEN_SIZE}")
+    if args.model == "wh":
+        print(f"\nChannels: {config.WH_CHANNELS} | MLP Hidden: {config.WH_MLP_HIDDEN} | Stable: {config.WH_STABLE}")
+    elif args.model == "mlp":
+        print(f"\nHidden Layers: {config.MLP_N_LAYERS} | Hidden Layer Size: {config.MLP_HIDDEN_SIZE}")
+    else:
+        print(f"\nHidden Layers: {config.GRU_N_LAYERS} | Hidden Layer Size: {config.GRU_HIDDEN_SIZE}")
 
     criterion = nn.MSELoss()
     optimizer = torch.optim.Adam(
         model.parameters(), lr=config.LR, weight_decay=config.WEIGHT_DECAY
     )
-    # OneCycleLR needs total_steps upfront; early stopping may shorten the run
-    total_steps = len(train_loader) * args.epochs
-    scheduler = torch.optim.lr_scheduler.OneCycleLR(
-        optimizer,
-        max_lr=config.ONE_CYCLE_MAX_LR,
-        total_steps=total_steps,
-    )
+    if args.model == "wh":
+        # Flat LR for dynoNet — OneCycleLR interacts poorly with IIR filter gradients
+        scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda _: 1.0)
+    else:
+        # OneCycleLR needs total_steps upfront; early stopping may shorten the run
+        total_steps = len(train_loader) * args.epochs
+        scheduler = torch.optim.lr_scheduler.OneCycleLR(
+            optimizer,
+            max_lr=config.ONE_CYCLE_MAX_LR,
+            total_steps=total_steps,
+        )
 
     best_val_loss    = float("inf")
     patience_counter = 0

@@ -2,14 +2,17 @@
 
 Usage
 -----
-    python evaluate.py --model gru          # single-model evaluation
+    python evaluate.py --model gru
     python evaluate.py --model mlp
-    python evaluate.py --ensemble           # MLP + GRU averaged ensemble
+    python evaluate.py --model wh
+    python evaluate.py --ensemble           # MLP + GRU + WH averaged
+    python evaluate.py --ensemble "mlp gru"   # any two-model combination
 """
 
 import argparse
 import csv
 import sys
+from datetime import datetime
 
 import joblib
 import matplotlib.pyplot as plt
@@ -18,20 +21,24 @@ import torch # type: ignore
 
 import config
 from preprocessing import get_dataloaders
-from models import ActuatorGRU, WindowedMLP
+from models import ActuatorGRU, WindowedMLP, WienerHammersteinNet
 
 
 # ── CLI ───────────────────────────────────────────────────────────────────────
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Evaluate actuator torque model")
-    parser.add_argument("--model", choices=["mlp", "gru"], default=None,
+    parser.add_argument("--model", choices=["mlp", "gru", "wh"], default=None,
                         help="Model type to evaluate (required unless --ensemble)")
-    parser.add_argument("--ensemble", action="store_true",
-                        help="Average MLP and GRU predictions (both checkpoints must exist)")
+    parser.add_argument("--ensemble",
+                        choices=["all", "mlp-gru", "gru-mlp",
+                                 "mlp-wh", "wh-mlp",
+                                 "gru-wh", "wh-gru"],
+                        default=None,
+                        help="Ensemble two or all three models (average predictions)")
     args = parser.parse_args()
-    if not args.ensemble and args.model is None:
-        parser.error("Specify --model mlp|gru or use --ensemble.")
+    if args.ensemble is None and args.model is None:
+        parser.error("Specify --model mlp|gru|wh or --ensemble <combo>.")
     return args
 
 
@@ -63,6 +70,13 @@ def load_checkpoint(model_type: str, device: torch.device):
             hidden_size=cfg.get("hidden_size", config.MLP_HIDDEN_SIZE),
             n_layers=cfg.get("n_layers",    config.MLP_N_LAYERS),
         )
+    elif model_type == "wh":
+        model = WienerHammersteinNet(
+            n_features=cfg["n_features"],
+            n_channels=cfg.get("n_channels", config.WH_CHANNELS),
+            mlp_hidden=cfg.get("mlp_hidden", config.WH_MLP_HIDDEN),
+            stable=cfg.get("stable",     config.WH_STABLE),
+        )
     else:
         model = ActuatorGRU(
             n_features=cfg["n_features"],
@@ -72,7 +86,7 @@ def load_checkpoint(model_type: str, device: torch.device):
 
     model.load_state_dict(ckpt["model_state_dict"])
     model.to(device).eval()
-    return model, ckpt["epoch"], ckpt["val_loss"]
+    return model, ckpt["epoch"], ckpt["val_loss"], cfg
 
 
 def _load_scalers():
@@ -179,10 +193,18 @@ def plot_error_hist(y_true, y_pred, save_path=None):
 
 # ── Ensemble plots ────────────────────────────────────────────────────────────
 
-def plot_timeseries_ensemble(y_true, y_mlp, y_gru, y_ens,
+# Fixed style per model name — ensemble always gets darkorange/solid.
+_MODEL_STYLE = {
+    "mlp": ("tomato",       ":"),
+    "gru": ("seagreen",     "--"),
+    "wh":  ("mediumpurple", "-."),
+}
+
+
+def plot_timeseries_ensemble(y_true, preds: dict[str, np.ndarray], y_ens,
                              hz=1000, window_s=5.0, save_path=None):
+    """preds: {model_name: y_pred_nm} for each individual model."""
     n = int(window_s * hz)
-    # Choose worst window based on ensemble error
     start, end = _worst_window(np.abs(y_ens - y_true), n)
     t = np.arange(n) / hz
 
@@ -190,20 +212,20 @@ def plot_timeseries_ensemble(y_true, y_mlp, y_gru, y_ens,
                              gridspec_kw={"height_ratios": [3, 1]})
     axes[0].plot(t, y_true[start:end], label="Measured $\\tau_{act}$",
                  linewidth=1.2, color="steelblue")
-    axes[0].plot(t, y_mlp[start:end],  label="MLP",
-                 linewidth=0.9, linestyle=":", color="tomato")
-    axes[0].plot(t, y_gru[start:end],  label="GRU",
-                 linewidth=0.9, linestyle="--", color="seagreen")
-    axes[0].plot(t, y_ens[start:end],  label="Ensemble",
+    for name, yp in preds.items():
+        color, ls = _MODEL_STYLE.get(name, ("grey", "--"))
+        axes[0].plot(t, yp[start:end], label=name.upper(),
+                     linewidth=0.9, linestyle=ls, color=color)
+    axes[0].plot(t, y_ens[start:end], label="Ensemble",
                  linewidth=1.2, linestyle="-", color="darkorange")
     axes[0].set_ylabel("Joint Torque [Nm]")
     axes[0].set_title("Ensemble — Predicted vs. Measured (highest-error 5 s window)")
     axes[0].legend()
 
-    axes[1].plot(t, y_mlp[start:end] - y_true[start:end],
-                 linewidth=0.8, color="tomato",    label="MLP")
-    axes[1].plot(t, y_gru[start:end] - y_true[start:end],
-                 linewidth=0.8, color="seagreen",  label="GRU")
+    for name, yp in preds.items():
+        color, ls = _MODEL_STYLE.get(name, ("grey", "--"))
+        axes[1].plot(t, yp[start:end] - y_true[start:end],
+                     linewidth=0.8, color=color, label=name.upper())
     axes[1].plot(t, y_ens[start:end] - y_true[start:end],
                  linewidth=0.8, color="darkorange", label="Ensemble")
     axes[1].axhline(0, color="black", linewidth=0.6, linestyle="--")
@@ -217,13 +239,19 @@ def plot_timeseries_ensemble(y_true, y_mlp, y_gru, y_ens,
     plt.close(fig)
 
 
-def plot_error_hist_ensemble(y_true, y_mlp, y_gru, y_ens, save_path=None):
-    fig, axes = plt.subplots(3, 1, figsize=(9, 9), sharex=True)
-    palette = [("MLP", y_mlp, "tomato"),
-               ("GRU", y_gru, "seagreen"),
-               ("Ensemble", y_ens, "darkorange")]
-    for ax, (label, y_pred, color) in zip(axes, palette):
-        errors = y_pred - y_true
+def plot_error_hist_ensemble(y_true, preds: dict[str, np.ndarray], y_ens,
+                             save_path=None):
+    """preds: {model_name: y_pred_nm} for each individual model."""
+    entries = list(preds.items()) + [("ensemble", y_ens)]
+    n_plots = len(entries)
+    fig, axes = plt.subplots(n_plots, 1, figsize=(9, 3 * n_plots), sharex=True)
+    if n_plots == 1:
+        axes = [axes]
+
+    for ax, (name, yp) in zip(axes, entries):
+        color = "darkorange" if name == "ensemble" else _MODEL_STYLE.get(name, ("grey",))[0]
+        label = "Ensemble" if name == "ensemble" else name.upper()
+        errors = yp - y_true
         ax.hist(errors, bins=120, edgecolor="none", color=color, alpha=0.8)
         ax.axvline(0, color="black", linewidth=1.0, linestyle="--")
         ax.axvline(errors.mean(), color="navy", linewidth=1.0,
@@ -256,6 +284,94 @@ def _save_metrics_csv(path, rows: dict[str, dict]):
     print(f"Metrics saved to {path}")
 
 
+def _ensemble_model_names(ensemble_str: str) -> list[str]:
+    """Parse '--ensemble' value into an ordered, deduplicated list of model names."""
+    if ensemble_str == "all":
+        return ["mlp", "gru", "wh"]
+
+    # e.g. "gru mlp" → ["gru", "mlp"]; keep the user's order but deduplicate
+    seen, names = set(), []
+    for n in ensemble_str.split("-"):
+        if n not in seen:
+            seen.add(n)
+            names.append(n)
+    return names
+
+
+# ── Evaluations.md logging ────────────────────────────────────────────────────
+
+_MD_PATH = config.PROJECT_ROOT / "Evaluations.md"
+
+_TABLE_HEADER = (
+    "| Date       | Model      | RMSE    | MAE    | Max Err. "
+    "| Ep. | Val MSE  "
+    "| Main/Crashes/Other | tStep/TMS/PMS/PLC   "
+    "| Smooth | Scaler | Excluded Features    | Hyperparameters |\n"
+    "|------------|------------|---------|--------|----------"
+    "|-----|----------"
+    "|--------------------|---------------------"
+    "|--------|--------|----------------------|-----------------|\n"
+)
+
+# Map INCLUDE_* config flags → the feature name they gate
+_INCLUDE_MAP = [
+    ("INCLUDE_I2T",      "i2t"),
+    ("INCLUDE_curr",     "i"),
+    ("INCLUDE_torKdEst", "torKdEst"),
+    ("INCLUDE_torEst",   "torEst"),
+    ("INCLUDE_kd",       "kd"),
+    ("INCLUDE_posDes",   "posDes"),
+    ("INCLUDE_accelAct", "accelAct"),
+    ("INCLUDE_t",        "t"),
+]
+
+
+def _get_excluded_features() -> str:
+    excluded = [feat for attr, feat in _INCLUDE_MAP if not getattr(config, attr)]
+    return ", ".join(excluded) if excluded else "none"
+
+
+def _format_hyperparams(model_type: str, cfg: dict) -> str:
+    if model_type == "mlp":
+        return f"{cfg.get('hidden_size')},{cfg.get('n_layers')}"
+    if model_type == "wh":
+        return f"{cfg.get('n_channels')},{cfg.get('mlp_hidden')},{config.WH_NA},{cfg.get('stable')}"
+    return (f"{cfg.get('hidden_size')}, {cfg.get('n_layers')}, {config.GRU_DROPOUT}")
+
+
+def _append_evaluations_md(model: str, hyperparams: str, epoch_str: str, val_mse_str: str, metrics: dict,) -> None:
+    date_str = datetime.now().strftime("%Y-%m-%d %H:%M")[6:]
+    rmse   = f"{metrics['RMSE [Nm]']:.4f}"
+    mae    = f"{metrics['MAE [Nm]']:.4f}"
+    maxerr = f"{metrics['Max Abs Error [Nm]']:.4f}"
+    blank = (10-len(model))*" "
+
+    row = (
+        f"| {date_str} | {model}{blank} | {rmse} | {mae} | {maxerr} "
+        f"| {epoch_str}  | {val_mse_str} "
+        f"| {config.USE_MAIN}/{config.USE_CRASHES}/{config.USE_OTHER}   "
+        f"| {config.USE_tStep}/{config.USE_TMS}/{config.USE_PMS}/{config.USE_PLC} "
+        f"| {config.SMOOTH_ACCEL}   | {config.SCALER_TYPE} "
+        f"| {_get_excluded_features()} | {hyperparams} |\n"
+    )
+
+    if _MD_PATH.exists():
+        content = _MD_PATH.read_text(encoding="utf-8")
+    else:
+        content = ""
+
+    if "| Date       |" in content:
+        content = content.rstrip("\n") + "\n" + row
+    else:
+        content = content.rstrip("\n")
+        if content:
+            content += "\n\n"
+        content += "## Evaluation Results\n\n" + _TABLE_HEADER + row
+
+    _MD_PATH.write_text(content, encoding="utf-8")
+    print(f"Results appended to {_MD_PATH}")
+
+
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 def main():
@@ -269,43 +385,60 @@ def main():
     print(f"Loading test data with {feature_names} .…")
     config.RESULTS_DIR.mkdir(exist_ok=True)
 
-    if args.ensemble:
+    if args.ensemble is not None:
         # ── Ensemble path ─────────────────────────────────────────────────────
-        mlp_model, mlp_epoch, mlp_val = load_checkpoint("mlp", device)
-        gru_model, gru_epoch, gru_val = load_checkpoint("gru", device)
-        print(f"Loaded MLP checkpoint (epoch {mlp_epoch}, val MSE {mlp_val:.6f})")
-        print(f"Loaded GRU checkpoint (epoch {gru_epoch}, val MSE {gru_val:.6f})")
+        model_names = _ensemble_model_names(args.ensemble)
+        models = {}
+        ckpt_cfgs: dict[str, dict] = {}
+        for name in model_names:
+            m, epoch, val, cfg = load_checkpoint(name, device)
+            models[name] = m
+            ckpt_cfgs[name] = cfg
+            ckpt_cfgs[name]["_epoch"]   = epoch
+            ckpt_cfgs[name]["_val_mse"] = val
+            print(f"Loaded {name.upper()} checkpoint (epoch {epoch}, val MSE {val:.6f})")
 
         print("Running inference …")
-        y_mlp_sc, y_true_sc = run_inference(mlp_model, test_loader, device)
-        y_gru_sc, _         = run_inference(gru_model, test_loader, device)
-        y_ens_sc            = (y_mlp_sc + y_gru_sc) / 2.0
+        scaled_preds: dict[str, np.ndarray] = {}
+        y_true_sc = None
+        for name, m in models.items():
+            p, y_true_sc = run_inference(m, test_loader, device)
+            scaled_preds[name] = p
+        y_ens_sc = np.mean(list(scaled_preds.values()), axis=0)
 
         y_true = _inverse(scaler_y, y_true_sc)
-        y_mlp  = _inverse(scaler_y, y_mlp_sc)
-        y_gru  = _inverse(scaler_y, y_gru_sc)
+        preds  = {name: _inverse(scaler_y, p) for name, p in scaled_preds.items()}
         y_ens  = _inverse(scaler_y, y_ens_sc)
 
-        rows = {
-            "MLP":      compute_metrics(y_true, y_mlp),
-            "GRU":      compute_metrics(y_true, y_gru),
-            "Ensemble": compute_metrics(y_true, y_ens),
-        }
+        rows = {name.upper(): compute_metrics(y_true, p) for name, p in preds.items()}
+        rows["Ensemble"] = compute_metrics(y_true, y_ens)
         _print_metrics_table(rows)
-        _save_metrics_csv(config.RESULTS_DIR / "metrics_ensemble.csv", rows)
+
+        suffix = "_".join(model_names)
+        _save_metrics_csv(config.RESULTS_DIR / f"metrics_ensemble_{suffix}.csv", rows)
 
         plot_timeseries_ensemble(
-            y_true, y_mlp, y_gru, y_ens,
-            save_path=config.RESULTS_DIR / "timeseries_ensemble.png",
+            y_true, preds, y_ens,
+            save_path=config.RESULTS_DIR / f"timeseries_ensemble_{suffix}.png",
         )
         plot_error_hist_ensemble(
-            y_true, y_mlp, y_gru, y_ens,
-            save_path=config.RESULTS_DIR / "error_hist_ensemble.png",
+            y_true, preds, y_ens,
+            save_path=config.RESULTS_DIR / f"error_hist_ensemble_{suffix}.png",
+        )
+
+        _append_evaluations_md(
+            model  = "/".join(n.upper() for n in model_names),
+            hyperparams  = "/".join(f"{n.upper()}({_format_hyperparams(n, ckpt_cfgs[n])})"for n in model_names),
+            #epoch_str    = "/".join(f"{n.upper()}:{ckpt_cfgs[n]['_epoch']}" for n in model_names),
+            #val_mse_str  = "/".join(f"{n.upper()}:{ckpt_cfgs[n]['_val_mse']:.6f}" for n in model_names),
+            epoch_str    = "--",
+            val_mse_str  = 8*"-",
+            metrics      = rows["Ensemble"],
         )
 
     else:
         # ── Single-model path ─────────────────────────────────────────────────
-        model, best_epoch, best_val = load_checkpoint(args.model, device)
+        model, best_epoch, best_val, ckpt_cfg = load_checkpoint(args.model, device)
         print(f"Loaded {args.model.upper()} checkpoint  "
               f"(epoch {best_epoch}, val MSE {best_val:.6f})")
 
@@ -328,6 +461,14 @@ def main():
         plot_error_hist(
             y_true, y_pred,
             save_path=config.RESULTS_DIR / f"error_hist_{args.model}.png",
+        )
+
+        _append_evaluations_md(
+            model  = args.model.upper(),
+            hyperparams  = _format_hyperparams(args.model, ckpt_cfg),
+            epoch_str    = str(best_epoch),
+            val_mse_str  = f"{best_val:.6f}",
+            metrics      = metrics,
         )
 
 

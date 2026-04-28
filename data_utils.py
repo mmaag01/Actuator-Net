@@ -47,6 +47,9 @@ class ImportData:
                 df['dataset_id'] = i  # Track which dataset each row came from
                 df['file_name'] = Path(file).stem  # Store filename
                 df['type'] = type # Store input type
+                if type == 'PLC_0.25-25':
+                    df = df.drop(df[df['velDes'] > 67000].index)
+
                 self.main_dataset.append(df)
                 #print(f"Loaded File Main/{type}/{Path(file).name}: {len(df)} rows")
         #self.main_combined = pd.concat(self.main_dataset, ignore_index=True)
